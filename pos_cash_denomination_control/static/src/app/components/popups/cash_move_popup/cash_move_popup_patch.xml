@@ -4,5 +4,24 @@
         <xpath expr="//button[contains(@t-on-click, &quot;'in'&quot;)]" position="attributes">
             <attribute name="t-if">pos.config.allow_cash_in</attribute>
         </xpath>
+        <xpath expr="//div[hasclass('form-floating')]" position="before">
+            <div class="pcdc-reason-select-wrapper mb-2">
+                <select class="form-select pcdc-reason-select"
+                    t-on-change="(ev) => this.state.reasonId = ev.target.value ? parseInt(ev.target.value) : false">
+                    <option value="">-- Select a reason --</option>
+                    <t t-foreach="availableReasons" t-as="reason" t-key="reason.id">
+                        <option t-att-value="reason.id" t-att-selected="reason.id === state.reasonId">
+                            <t t-esc="reason.name"/>
+                        </option>
+                    </t>
+                </select>
+            </div>
+        </xpath>
+        <xpath expr="//textarea[@name='reason']" position="attributes">
+            <attribute name="t-model">state.note</attribute>
+        </xpath>
+        <xpath expr="//label[@for='reason']" position="replace">
+            <label for="reason">Note (optional)</label>
+        </xpath>
     </t>
 </templates>
