@@ -4,6 +4,13 @@ Covers spec `cash-in-control`. `try_cash_in_out` must reject `_type='in'`
 whenever the session's `pos.config.allow_cash_in` is `False`, regardless of
 caller (direct RPC included), additive to the stock
 `_has_cash_move_permission()` check. It must never affect `_type='out'`.
+
+Every accepted-move scenario below passes `extras['reason_id']`: Phase 4
+(spec `cash-move-reasons`) made a reason mandatory on every cash move after
+this test file was first written in Phase 3, so a success-path call without
+one is now correctly rejected with "reason is required" — these calls were
+updated accordingly, they do not test the reason feature itself (see
+`tests/test_reasons.py` for that).
 """
 
 from odoo import Command
@@ -22,6 +29,9 @@ class TestCashInControl(CommonPosTest):
         cls.pos_config_usd.open_ui()
         cls.session = cls.pos_config_usd.current_session_id
         cls.session.set_opening_control(0, False)
+        cls.reason = cls.env["pos.cash.move.reason"].create(
+            {"name": "Test Reason", "direction": "both"}
+        )
         cls.no_permission_user = cls.env["res.users"].with_context(
             no_reset_password=True
         ).create(
@@ -71,7 +81,11 @@ class TestCashInControl(CommonPosTest):
         self.pos_config_usd.allow_cash_in = False
         before = self._statement_line_count()
         self.session.try_cash_in_out(
-            "out", 5, "Bank deposit", False, {"translatedType": "Cash out"}
+            "out",
+            5,
+            "Bank deposit",
+            False,
+            {"translatedType": "Cash out", "reason_id": self.reason.id},
         )
         self.assertEqual(self._statement_line_count(), before + 1)
 
@@ -98,7 +112,11 @@ class TestCashInControl(CommonPosTest):
         self.pos_config_usd.allow_cash_in = True
         before = self._statement_line_count()
         self.session.try_cash_in_out(
-            "in", 10, "Test reason", False, {"translatedType": "Cash in"}
+            "in",
+            10,
+            "Test reason",
+            False,
+            {"translatedType": "Cash in", "reason_id": self.reason.id},
         )
         self.assertEqual(self._statement_line_count(), before + 1)
 
@@ -107,7 +125,11 @@ class TestCashInControl(CommonPosTest):
         self.pos_config_usd.allow_cash_in = True
         before = self._statement_line_count()
         self.session.try_cash_in_out(
-            "in", 15, "Valid reason", False, {"translatedType": "Cash in"}
+            "in",
+            15,
+            "Valid reason",
+            False,
+            {"translatedType": "Cash in", "reason_id": self.reason.id},
         )
         self.assertEqual(self._statement_line_count(), before + 1)
 

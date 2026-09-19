@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Backs specs/cash-move-reasons/spec.md "Seed Data — Exactly One
+         Vault Reason": exactly one out-only, no-company reason named
+         "Vault". No "From vault" or any other inbound vault reason is
+         seeded. -->
+    <record id="pos_cash_move_reason_vault" model="pos.cash.move.reason">
+        <field name="name">Vault</field>
+        <field name="direction">out</field>
+        <field name="is_vault" eval="True"/>
+        <field name="sequence">10</field>
+    </record>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_pos_cash_move_reason"
+        name="Cash Move Reasons"
+        parent="point_of_sale.menu_point_config_product"
+        sequence="5"
+        action="action_pos_cash_move_reason"
+        groups="point_of_sale.group_pos_manager"/>
+</odoo>

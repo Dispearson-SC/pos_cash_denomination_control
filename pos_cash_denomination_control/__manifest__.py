@@ -8,7 +8,12 @@
     "license": "LGPL-3",
     "depends": ["point_of_sale"],
     "data": [
+        "security/ir.model.access.csv",
+        "security/security.xml",
+        "data/pos_cash_move_reason_data.xml",
         "views/res_config_settings_views.xml",
+        "views/pos_cash_move_reason_views.xml",
+        "views/menus.xml",
     ],
     "assets": {
         "point_of_sale._assets_pos": [
@@ -18,5 +23,6 @@
             "pos_cash_denomination_control/static/tests/unit/**/*",
         ],
     },
+    "post_init_hook": "post_init_hook",
     "installable": True,
 }

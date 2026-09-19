@@ -16,3 +16,19 @@ in the Point of Sale UI, and the server also rejects any `try_cash_in_out`
 call of type `in` for that session, no matter how it is issued (Point of
 Sale UI, direct RPC, or a replayed offline call), until the toggle is turned
 back on.
+
+## Cash Move Reasons
+
+Every cash IN and cash OUT operation now requires a reason from the
+**Cash Move Reasons** catalog (**Point of Sale > Configuration > Cash Move
+Reasons**, manager access only). A reason has a direction (`Out`, `In`, or
+`Both`) that restricts which move types it can be used for, and an optional
+"Vault" flag that additionally restricts it to cash OUT only.
+
+The module seeds one reason, "Vault" (`Out`, Vault), and sets it as every
+Point of Sale's default cash-out reason — including every Point of Sale
+configuration that existed before this module was installed. Any
+`try_cash_in_out` call without a valid, active, same-company,
+direction-compatible reason is rejected before any accounting entry is
+created, so a third-party integration calling `try_cash_in_out` directly
+must also supply `extras['reason_id']`.

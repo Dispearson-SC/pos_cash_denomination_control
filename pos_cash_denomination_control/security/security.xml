@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Backs specs/cash-move-reasons/spec.md "Backend Views And Security":
+         a shared (company-less) reason stays visible everywhere; a
+         company-scoped reason is visible only to that company, matching
+         point_of_sale's own rule style (security/point_of_sale_security.xml). -->
+    <record id="rule_pos_cash_move_reason_multi_company" model="ir.rule">
+        <field name="name">POS Cash Move Reason Multi-Company</field>
+        <field name="model_id" ref="model_pos_cash_move_reason"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>
