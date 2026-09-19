@@ -29,3 +29,25 @@ with a vault reason preselected: the Point of Sale's default cash-out reason
 if it is itself a vault reason, otherwise the first active vault reason (by
 sequence), otherwise no preselection. A user without the stock cash-move
 permission sees a notification instead of the popup.
+
+## Closing Manager Override
+
+With the **Closing Cash Count Required** toggle on, closing a session
+without a recorded closing denomination count is allowed only for a user
+in the **Point of Sale / Administrator** (manager) group. This applies to
+every way a session can be closed: the Point of Sale UI, the back-office
+"Close Session & Post Entries" button, the force-close wizard, and a
+direct call to close the session. Any other user gets an error instead,
+and the session is left exactly as it was before the attempt.
+
+When a manager closes a session this way, the session is flagged
+(**Closed Without Denomination Count**, with the acting manager and the
+date/time recorded), and a chatter message documents the override. The
+flag is shown on the session form and as an optional list column, and can
+be used as a search filter or group-by on the Sessions list.
+
+The Point of Sale UI closing screen always records a breakdown when the
+toggle is on (see the denomination breakdown popup above), so a cashier
+closing a session from the Point of Sale itself is never blocked by this
+rule — only a back-office closing with no recorded count requires the
+manager group.

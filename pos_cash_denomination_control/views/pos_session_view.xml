@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Backs spec `closing-manager-override`, Requirement "Manager-Closing
+         Flag And Audit Trail": exposes the flag fields on the session
+         form, an optional list column, and a search filter + group-by
+         (design.md's Views and menus section). -->
+    <record id="view_pos_session_form_pcdc" model="ir.ui.view">
+        <field name="name">pos.session.form.pcdc.closing.override</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='rescue']" position="after">
+                <field name="closed_without_denomination_count"/>
+                <field
+                    name="closed_without_denomination_count_user_id"
+                    invisible="not closed_without_denomination_count"/>
+                <field
+                    name="closed_without_denomination_count_date"
+                    invisible="not closed_without_denomination_count"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_pos_session_tree_pcdc" model="ir.ui.view">
+        <field name="name">pos.session.list.pcdc.closing.override</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="closed_without_denomination_count" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_pos_session_search_pcdc" model="ir.ui.view">
+        <field name="name">pos.session.search.pcdc.closing.override</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='open_sessions']" position="after">
+                <filter
+                    name="closed_without_denomination_count"
+                    string="Closed Without Denomination Count"
+                    domain="[('closed_without_denomination_count', '=', True)]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter
+                    string="Closed Without Denomination Count"
+                    name="group_by_closed_without_denomination_count"
+                    domain="[]"
+                    context="{'group_by': 'closed_without_denomination_count'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -15,6 +15,7 @@
         "views/pos_cash_move_reason_views.xml",
         "views/pos_cash_denomination_count_views.xml",
         "views/account_bank_statement_line_views.xml",
+        "views/pos_session_view.xml",
         "views/menus.xml",
     ],
     "assets": {

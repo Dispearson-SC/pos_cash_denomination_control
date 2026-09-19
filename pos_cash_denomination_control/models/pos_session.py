@@ -45,6 +45,24 @@ is the one place that resolves toggles/allowed-bills/rounding fresh from
 no caching, so a queued RPC is validated against the server's state *at
 replay time*).
 
+Backs spec `closing-manager-override`: `_validate_session` (the single
+writer of `state='closed'`, `point_of_sale/models/pos_session.py:482`) is
+overridden as a guard that every public close path reaches — the
+back-office button, the force-close/imbalance wizard
+(`wizard/pos_close_session_wizard.py`), and direct RPC calls to
+`action_pos_session_validate`/`action_pos_session_close`. With the closing
+toggle on, a session with no valid closing count can close only for a POS
+manager (`domain.closing.evaluate_closing`); a non-manager gets
+`UserError` before `super()` runs (design.md ADR-9). A manager is instead
+flagged (`closed_without_denomination_count` + user/date, plus a chatter
+message), written only once `super()` reports `self.state == 'closed'` so
+an imbalance-wizard redirect is never flagged. The guard reads
+`self.env.user` — the real acting user — entirely before `super()`'s own
+internal `sudo()` escalation for `group_pos_user` callers
+(`point_of_sale/models/pos_session.py:427-428`), so that unrelated
+internal sudo() writes can never mask the acting user's actual group
+membership.
+
 `set_opening_control(cashbox_value, notes, denomination_lines=None)`
 follows design.md ADR-1: the public method only stashes `denomination_lines`
 into context and delegates to `super()` unmodified — core's own docstring
@@ -58,14 +76,16 @@ entirely: every override in the chain keeps calling `super()` with the
 original two-argument signature.
 """
 
-from odoo import api, models
-from odoo.exceptions import AccessError
+from odoo import api, fields, models
+from odoo.exceptions import AccessError, UserError
 from odoo.tools.translate import _
 
 from ..domain.breakdown import validate_breakdown
 from ..domain.cash_moves import CountToggles, count_required, validate_move_type
 from ..domain.cash_position import compute_expected_cash, is_withdrawal_required
+from ..domain.closing import ClosingDecision, evaluate_closing
 from ..domain.errors import BreakdownError, MoveTypeError, ReasonError
+from ..domain.money import compare_amounts
 from ..domain.reasons import validate_reason
 from ..domain.text import compose_payment_text
 from .domain_errors import raise_domain_error
@@ -89,6 +109,23 @@ def _pcdc_thaw_lines(frozen):
 
 class PosSession(models.Model):
     _inherit = "pos.session"
+
+    closed_without_denomination_count = fields.Boolean(
+        readonly=True,
+        copy=False,
+        index=True,
+        help="Set when a POS manager closed this session without a "
+        "recorded closing denomination count (spec "
+        "`closing-manager-override`).",
+    )
+    closed_without_denomination_count_user_id = fields.Many2one(
+        "res.users",
+        readonly=True,
+        help="The manager who closed this session without a recorded "
+        "closing denomination count.",
+    )
+    closed_without_denomination_count_date = fields.Datetime(readonly=True)
+    cash_count_ids = fields.One2many("pos.cash.denomination.count", "session_id")
 
     @api.model
     def _load_pos_data_models(self, config):
@@ -443,4 +480,80 @@ class PosSession(models.Model):
                 [("session_id", "=", self.id), ("move_type", "=", "closing")]
             ).unlink()
             self._pcdc_create_count("closing", bd, bills)
+        return result
+
+    def _pcdc_has_valid_closing_count(self):
+        """`True` when the latest `closing`-type
+        `pos.cash.denomination.count` header for this session has a
+        `total` matching `cash_register_balance_end_real`, within
+        currency rounding (design.md's Back-office close guard: `has_valid`).
+
+        A back-office edit of the counted cash after a POS-recorded count,
+        or a rescue session (whose balance is overwritten by
+        `action_pos_session_closing_control`), both invalidate a
+        previously-recorded count, exactly as design.md documents."""
+        self.ensure_one()
+        header = (
+            self.env["pos.cash.denomination.count"]
+            .sudo()
+            .search(
+                [("session_id", "=", self.id), ("move_type", "=", "closing")],
+                order="date desc, id desc",
+                limit=1,
+            )
+        )
+        if not header:
+            return False
+        return (
+            compare_amounts(
+                header.total,
+                self.cash_register_balance_end_real,
+                self.currency_id.rounding,
+            )
+            == 0
+        )
+
+    def _validate_session(
+        self, balancing_account=False, amount_to_balance=0, bank_payment_method_diffs=None
+    ):
+        """Closing-manager-override guard (design.md's Back-office close
+        guard, spec `closing-manager-override`). See this class's
+        docstring for the full rationale; in short: this override runs
+        entirely before `super()`, so `self.env.user.has_group(...)` below
+        always reads the real acting user's own groups, never an
+        escalated `sudo()` context `super()` may switch to internally.
+        """
+        self.ensure_one()
+        config = self.config_id
+        required = bool(config.cash_control) and bool(config.cash_count_closing_required)
+        has_valid = self._pcdc_has_valid_closing_count()
+        is_manager = self.env.user.has_group("point_of_sale.group_pos_manager")
+        decision = evaluate_closing(required, has_valid, is_manager)
+        if decision == ClosingDecision.REJECTED:
+            raise UserError(
+                _(
+                    "Only a point of sale manager can close this session "
+                    "without a recorded closing denomination count."
+                )
+            )
+        result = super()._validate_session(
+            balancing_account, amount_to_balance, bank_payment_method_diffs
+        )
+        # Not flagged when `super()` returned the imbalance/force-close
+        # wizard action instead of actually closing the session.
+        if decision == ClosingDecision.ALLOWED_FLAGGED and self.state == "closed":
+            self.sudo().write(
+                {
+                    "closed_without_denomination_count": True,
+                    "closed_without_denomination_count_user_id": self.env.user.id,
+                    "closed_without_denomination_count_date": fields.Datetime.now(),
+                }
+            )
+            self.message_post(
+                body=_(
+                    "Session closed without a recorded closing "
+                    "denomination count by %(user)s (manager override).",
+                    user=self.env.user.name,
+                )
+            )
         return result
