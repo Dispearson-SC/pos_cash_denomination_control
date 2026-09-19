@@ -22,6 +22,9 @@
         "point_of_sale._assets_pos": [
             "pos_cash_denomination_control/static/src/**/*",
         ],
+        "web.assets_tests": [
+            "pos_cash_denomination_control/static/tests/tours/**/*",
+        ],
         "web.assets_unit_tests": [
             "pos_cash_denomination_control/static/tests/unit/**/*",
         ],

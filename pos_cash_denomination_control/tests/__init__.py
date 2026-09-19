@@ -17,3 +17,4 @@ from . import test_enforcement_cash_moves
 from . import test_enforcement_closing
 from . import test_enforcement_replay
 from . import test_closing_override
+from . import test_frontend

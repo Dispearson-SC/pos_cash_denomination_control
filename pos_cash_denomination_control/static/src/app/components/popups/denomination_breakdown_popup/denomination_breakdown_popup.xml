@@ -3,7 +3,7 @@
     <t t-name="pos_cash_denomination_control.DenominationBreakdownPopup">
         <Dialog title="props.title" size="'md'">
             <div t-attf-style="display: grid; grid-template-rows: repeat(calc({{bills.length}}/{{ui.isSmall ? 1 : 2}}), auto); grid-auto-flow: column;">
-                <div t-foreach="bills" t-as="bill" t-key="bill.id" class="d-flex align-items-center justify-content-center my-1">
+                <div t-foreach="bills" t-as="bill" t-key="bill.id" t-att-data-bill-name="bill.name" class="d-flex align-items-center justify-content-center my-1">
                     <NumericInput class="'w-50'" tModel="[state, bill.id]" min="0"/>
                     <label class="oe_link_icon w-25 text-center" t-att-for="bill.id">
                         <span class="ms-1" t-esc="env.utils.formatCurrency(bill.value)"/>
