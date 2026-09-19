@@ -3,13 +3,18 @@
     <!-- Backs specs/cash-count-records/spec.md "Reporting Views, Menu,
          Access, And Record Rules": list, pivot, and graph views on count
          lines, including a reason dimension, grouped by POS, date, move
-         type, denomination, reason, and employee. -->
+         type, denomination, reason, and employee.
+
+         Backs `odd/tasks/denomination-count-reports.md` T3: a session
+         column (optional) and a per-row "Open session" control, so a line
+         can navigate straight to its POS session. -->
     <record id="view_pos_cash_denomination_count_line_list" model="ir.ui.view">
         <field name="name">pos.cash.denomination.count.line.list</field>
         <field name="model">pos.cash.denomination.count.line</field>
         <field name="arch" type="xml">
             <list string="Denomination Counts">
                 <field name="date"/>
+                <field name="session_id" optional="show"/>
                 <field name="config_id"/>
                 <field name="move_type"/>
                 <field name="bill_name"/>
@@ -19,6 +24,8 @@
                 <field name="reason_id"/>
                 <field name="employee_name" optional="show"/>
                 <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+                <button name="action_open_session" type="object"
+                    string="Open Session" icon="fa-external-link"/>
             </list>
         </field>
     </record>
@@ -54,11 +61,13 @@
         <field name="model">pos.cash.denomination.count.line</field>
         <field name="arch" type="xml">
             <search string="Denomination Counts">
+                <field name="session_id"/>
                 <field name="config_id"/>
                 <field name="reason_id"/>
                 <field name="bill_id"/>
                 <filter name="filter_date" date="date"/>
                 <group>
+                    <filter string="Session" name="group_by_session" context="{'group_by':'session_id'}"/>
                     <filter string="Point of Sale" name="group_by_config" context="{'group_by':'config_id'}"/>
                     <filter string="Date" name="group_by_date" context="{'group_by':'date:day'}"/>
                     <filter string="Move Type" name="group_by_move_type" context="{'group_by':'move_type'}"/>
@@ -76,5 +85,103 @@
         <field name="view_mode">list,pivot,graph</field>
         <field name="search_view_id" ref="view_pos_cash_denomination_count_line_search"/>
         <field name="context">{'search_default_group_by_config': 1}</field>
+    </record>
+
+    <!-- Backs `odd/tasks/denomination-count-reports.md` T1: the movement
+         (header) views, action, and menu. Records stay non-editable in
+         every view (create/edit/delete all off) — every write goes
+         through adapter code in sudo() (design.md's Data Model), and the
+         existing ACLs already grant no create/write/unlink to any group. -->
+    <record id="view_pos_cash_denomination_count_list" model="ir.ui.view">
+        <field name="name">pos.cash.denomination.count.list</field>
+        <field name="model">pos.cash.denomination.count</field>
+        <field name="arch" type="xml">
+            <list string="Denomination Movements" create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="session_id"/>
+                <field name="config_id"/>
+                <field name="move_type"/>
+                <field name="reason_id"/>
+                <field name="total" sum="Total"/>
+                <field name="user_id"/>
+                <field name="employee_name" optional="show"/>
+                <field name="note" optional="hide"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_pos_cash_denomination_count_form" model="ir.ui.view">
+        <field name="name">pos.cash.denomination.count.form</field>
+        <field name="model">pos.cash.denomination.count</field>
+        <field name="arch" type="xml">
+            <form string="Denomination Movement" create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_open_session" type="object"
+                        string="Open Session" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="session_id"/>
+                            <field name="config_id"/>
+                            <field name="move_type"/>
+                            <field name="reason_id"/>
+                        </group>
+                        <group>
+                            <field name="total"/>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                            <field name="employee_name"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="Note..."/>
+                    <notebook>
+                        <page string="Denomination Lines" name="denomination_lines">
+                            <field name="line_ids">
+                                <list create="0" edit="0" delete="0">
+                                    <field name="bill_name"/>
+                                    <field name="bill_value"/>
+                                    <field name="quantity"/>
+                                    <field name="subtotal" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_pos_cash_denomination_count_search" model="ir.ui.view">
+        <field name="name">pos.cash.denomination.count.search</field>
+        <field name="model">pos.cash.denomination.count</field>
+        <field name="arch" type="xml">
+            <search string="Denomination Movements">
+                <field name="session_id"/>
+                <field name="config_id"/>
+                <field name="reason_id"/>
+                <filter name="filter_date" date="date"/>
+                <separator/>
+                <filter string="Opening" name="move_type_opening" domain="[('move_type', '=', 'opening')]"/>
+                <filter string="Cash In" name="move_type_in" domain="[('move_type', '=', 'in')]"/>
+                <filter string="Cash Out" name="move_type_out" domain="[('move_type', '=', 'out')]"/>
+                <filter string="Closing" name="move_type_closing" domain="[('move_type', '=', 'closing')]"/>
+                <group>
+                    <filter string="Session" name="group_by_session" context="{'group_by':'session_id'}"/>
+                    <filter string="Point of Sale" name="group_by_config" context="{'group_by':'config_id'}"/>
+                    <filter string="Move Type" name="group_by_move_type" context="{'group_by':'move_type'}"/>
+                    <filter string="Reason" name="group_by_reason" context="{'group_by':'reason_id'}"/>
+                    <filter string="Date" name="group_by_date" context="{'group_by':'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pos_cash_denomination_count" model="ir.actions.act_window">
+        <field name="name">Denomination Movements</field>
+        <field name="res_model">pos.cash.denomination.count</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_pos_cash_denomination_count_search"/>
     </record>
 </odoo>

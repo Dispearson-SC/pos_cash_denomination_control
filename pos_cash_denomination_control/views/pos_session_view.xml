@@ -21,6 +21,28 @@
         </field>
     </record>
 
+    <!-- Backs `odd/tasks/denomination-count-reports.md` T2: a smart
+         button in the session form's button box opening this session's
+         denomination movements. `//div[@name='button_box']` is confirmed
+         present on `point_of_sale.view_pos_session_form` in Odoo 19
+         (point_of_sale/views/pos_session_view.xml). -->
+    <record id="view_pos_session_form_pcdc_movements" model="ir.ui.view">
+        <field name="name">pos.session.form.pcdc.denomination.movements</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_denomination_movements"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-money">
+                    <field name="pcdc_count_movement_count" widget="statinfo"
+                        string="Denomination Movements"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
     <record id="view_pos_session_tree_pcdc" model="ir.ui.view">
         <field name="name">pos.session.list.pcdc.closing.override</field>
         <field name="model">pos.session</field>

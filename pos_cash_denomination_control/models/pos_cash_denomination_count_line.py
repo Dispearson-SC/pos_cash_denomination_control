@@ -62,3 +62,18 @@ class PosCashDenominationCountLine(models.Model):
     def _compute_subtotal(self):
         for line in self:
             line.subtotal = (line.quantity or 0) * (line.bill_value or 0.0)
+
+    def action_open_session(self):
+        """Open this line's session form (feature document
+        `denomination-count-reports.md`'s line-report "Open session"
+        control). `session_id` is a related, stored field, so it is
+        available directly on the line without loading `count_id`."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": self.session_id.display_name,
+            "res_model": "pos.session",
+            "res_id": self.session_id.id,
+            "view_mode": "form",
+            "views": [(False, "form")],
+        }

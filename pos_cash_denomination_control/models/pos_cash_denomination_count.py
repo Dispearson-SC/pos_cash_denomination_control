@@ -60,3 +60,16 @@ class PosCashDenominationCount(models.Model):
     _total_non_negative = models.Constraint(
         "CHECK(total >= 0)", "The counted total cannot be negative."
     )
+
+    def action_open_session(self):
+        """Open this movement's session form (feature document
+        `denomination-count-reports.md`'s "Open session" button)."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": self.session_id.display_name,
+            "res_model": "pos.session",
+            "res_id": self.session_id.id,
+            "view_mode": "form",
+            "views": [(False, "form")],
+        }

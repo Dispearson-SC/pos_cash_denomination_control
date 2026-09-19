@@ -126,6 +126,48 @@ class PosSession(models.Model):
     )
     closed_without_denomination_count_date = fields.Datetime(readonly=True)
     cash_count_ids = fields.One2many("pos.cash.denomination.count", "session_id")
+    pcdc_count_movement_count = fields.Integer(
+        compute="_compute_pcdc_count_movement_count"
+    )
+
+    def _compute_pcdc_count_movement_count(self):
+        """Backs the "Denomination Movements" smart button (feature
+        document `denomination-count-reports.md`). Non-stored, computed the
+        same way core's own `_compute_order_count` is
+        (`point_of_sale/models/pos_session.py`): a single grouped count
+        query, no `@api.depends` (a fresh read always recomputes it)."""
+        counts_data = self.env["pos.cash.denomination.count"]._read_group(
+            [("session_id", "in", self.ids)], ["session_id"], ["__count"]
+        )
+        counts_by_session = {session.id: count for session, count in counts_data}
+        for session in self:
+            session.pcdc_count_movement_count = counts_by_session.get(session.id, 0)
+
+    def action_view_denomination_movements(self):
+        """Open the "Denomination Movements" action filtered to this
+        session (the smart button's target, and reusable for any future
+        multi-session caller the same way core's `action_view_order` is)."""
+        return {
+            "name": _("Denomination Movements"),
+            "res_model": "pos.cash.denomination.count",
+            "view_mode": "list,form",
+            "views": [
+                (
+                    self.env.ref(
+                        "pos_cash_denomination_control.view_pos_cash_denomination_count_list"
+                    ).id,
+                    "list",
+                ),
+                (
+                    self.env.ref(
+                        "pos_cash_denomination_control.view_pos_cash_denomination_count_form"
+                    ).id,
+                    "form",
+                ),
+            ],
+            "type": "ir.actions.act_window",
+            "domain": [("session_id", "in", self.ids)],
+        }
 
     @api.model
     def _load_pos_data_models(self, config):
