@@ -22,7 +22,7 @@ i.e. wipe the dev database and filestore).
 ```bash
 scripts/test.sh                              # install + full addon test suite
 scripts/test.sh pos_hr                       # coexistence run, also installs pos_hr
-scripts/test.sh "" -- --test-tags /pos_cash_denomination_control:pcdc_domain
+scripts/test.sh "" -- --test-tags pcdc_domain/pos_cash_denomination_control
 ```
 
 `scripts/test.sh` always drops and recreates a disposable `pcdc_test`
