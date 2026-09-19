@@ -336,6 +336,28 @@ msgid "Denomination Counts Analysis"
 msgstr "Análisis de conteos de denominaciones"
 
 #. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_form
+msgid "Denomination Lines"
+msgstr "Líneas de denominaciones"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_form
+msgid "Denomination Movement"
+msgstr "Movimiento de denominaciones"
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/pos_session.py:0
+#: model:ir.actions.act_window,name:pos_cash_denomination_control.action_pos_cash_denomination_count
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_session__pcdc_count_movement_count
+#: model:ir.ui.menu,name:pos_cash_denomination_control.menu_pos_cash_denomination_count_movement
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_list
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_search
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_session_form_pcdc_movements
+msgid "Denomination Movements"
+msgstr "Movimientos de denominaciones"
+
+#. module: pos_cash_denomination_control
 #. odoo-python
 #: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
 msgid "Denomination breakdown validation failed."
@@ -476,12 +498,23 @@ msgid "Note (optional)"
 msgstr "Nota (opcional)"
 
 #. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_form
+msgid "Note..."
+msgstr "Nota..."
+
+#. module: pos_cash_denomination_control
 #. odoo-python
 #: code:addons/pos_cash_denomination_control/models/pos_session.py:0
 msgid ""
 "Only a point of sale manager can close this session without a recorded "
 "closing denomination count."
 msgstr "Solo un gerente del punto de venta puede cerrar esta sesión sin un conteo de denominaciones de cierre registrado."
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_form
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_list
+msgid "Open Session"
+msgstr "Abrir sesión"
 
 #. module: pos_cash_denomination_control
 #. odoo-javascript
@@ -491,6 +524,7 @@ msgstr "Abrir la ventana de desglose de denominaciones"
 
 #. module: pos_cash_denomination_control
 #: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_denomination_count__move_type__opening
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_search
 msgid "Opening"
 msgstr "Apertura"
 

@@ -29,7 +29,7 @@ Out of scope: changing defaults of the denomination toggles (user decided they s
 - [x] T1 Movement views (list/form/search), action, and menu; tests first. Route: delegated (2+ non-trivial files).
 - [x] T2 Session smart button + `action_view_denomination_movements` + movement count; tests first. Route: delegated (same writer).
 - [x] T3 Line report: session column, group-by session, open-session control; movement form "Open session" button; tests first. Route: delegated (same writer).
-- [ ] T4 Spanish translations for new strings; full suite green in both runs. Route: delegated (same writer).
+- [x] T4 Spanish translations for new strings; full suite green in both runs. Route: delegated (same writer).
 
 ## Acceptance criteria
 - Session form shows a "Denomination Movements" button with the correct count; it opens only that session's movements.
@@ -47,7 +47,11 @@ Out of scope: changing defaults of the denomination toggles (user decided they s
   - Added: `pos.cash.denomination.count.action_open_session()`, `pos.cash.denomination.count.line.action_open_session()`, `pos.session.pcdc_count_movement_count` (compute, no `@api.depends`, mirrors core `_compute_order_count`) + `action_view_denomination_movements()`.
   - Views: movement list/form/search + `action_pos_cash_denomination_count` + menu `menu_pos_cash_denomination_count_movement` (sequence 7, `Cash Moves` bumped to 8) in `pos_cash_denomination_count_views.xml`/`menus.xml`; session smart button via xpath on `//div[@name='button_box']` (confirmed present on `point_of_sale.view_pos_session_form` in the installed Odoo 19 image) in `pos_session_view.xml`; line list session column (`optional="show"`) + `action_open_session` row button + search group-by-session in `pos_cash_denomination_count_views.xml`.
   - Multi-company: added a header-level rule test (`test_header_multi_company_rule_hides_other_company_movements`) alongside the pre-existing line-level one; both pass unmodified — new views/action did not touch record rules.
-- T4 (i18n) in progress next.
+- T4: fixed `pos_session.pcdc_count_movement_count` to carry `string="Denomination Movements"` (avoids an ugly auto-generated "Pcdc Count Movement Count" field-description msgid; verified it merges with the existing "Denomination Movements" msgid after re-export). Regenerated `.pot` via `odoo i18n export pos_cash_denomination_control -d pcdc_test -o <file>` inside the container, using a throwaway world-writable bind mount (`scratchpad/i18n_export`, chmod 777 — the repo's own `/mnt/extra-addons` mount is read-only) since the container's odoo user could not write to a non-world-writable host dir; removed that temp dir immediately after copying the `.pot` out. 5 genuinely new msgids found by diffing old vs new `.pot`: "Denomination Lines", "Denomination Movement", "Denomination Movements", "Note...", "Open Session" (all other diff lines were added `#:` location comments on already-translated shared strings like "Opening"/"Cash In"/"Session"/"Total" — no new translation needed there). Added all 5 to `i18n/es.po` at their correct alphabetical position with neutral Latin-American Spanish translations ("Movimientos de denominaciones", "Movimiento de denominaciones", "Líneas de denominaciones", "Nota...", "Abrir sesión"). Validated both `.po`/`.pot` parse cleanly via Odoo's own `odoo.tools.translate.translation_file_reader` inside the container (227 rows each; the 5 new msgids resolve to the expected `msgstr` in `es.po`) — `msgfmt`/`msgcat` are not installed in the image or on the host, so this was the available in-repo-tooling equivalent check.
+- Final full-suite verification:
+  - `./scripts/test.sh` → `0 failed, 0 error(s) of 160 tests` (>148 ✓), `[HOOT] Passed 52 tests (78 assertions)`, 7/7 `TOUR ... SUCCEEDED`.
+  - `./scripts/test.sh pos_hr` → `0 failed, 0 error(s) of 160 tests` (>148 ✓), `[HOOT] Passed 52 tests (78 assertions)`, 7/7 `TOUR ... SUCCEEDED`.
+- Host safety: `caja-boveda-odoo-1` stopped after the runs; no stray `caja-boveda-odoo-run-*` containers left; only the pre-existing `caja-boveda-db-1` (already running before this session) and unrelated containers (including `pitubldilkiubgst5yrmbpug`) were left untouched.
 
 ## Next step
-T4: regenerate `.pot`, translate new strings into `i18n/es.po`, run both full suites.
+Feature complete: T1–T4 all done, both full suites green. No further tasks pending; awaiting review/PR decision (out of this writer's scope — no push/PR/merge performed).

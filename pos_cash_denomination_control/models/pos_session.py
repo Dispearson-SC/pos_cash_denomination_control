@@ -127,7 +127,8 @@ class PosSession(models.Model):
     closed_without_denomination_count_date = fields.Datetime(readonly=True)
     cash_count_ids = fields.One2many("pos.cash.denomination.count", "session_id")
     pcdc_count_movement_count = fields.Integer(
-        compute="_compute_pcdc_count_movement_count"
+        string="Denomination Movements",
+        compute="_compute_pcdc_count_movement_count",
     )
 
     def _compute_pcdc_count_movement_count(self):
