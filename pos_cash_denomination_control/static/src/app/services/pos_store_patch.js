@@ -8,12 +8,21 @@ import { _t } from "@web/core/l10n/translation";
 
 patch(PosStore.prototype, {
     async setup() {
-        await super.setup(...arguments);
         // `vault-withdrawal-alert` spec: reactive state consumed by the
         // navbar indicator (Phase 7). `known` distinguishes "never refreshed
         // yet" from "refreshed and not required", so the very first refresh
         // that already reports `required` still triggers a notification
         // (the "on load when already required" scenario).
+        //
+        // Initialized BEFORE `super.setup()` (empirically confirmed, found
+        // via Phase 13's E2E vault-alert tour): `super.setup()` itself
+        // calls `this.afterProcessServerData()`, which our own override
+        // below immediately calls `refreshVaultState()` from — with a
+        // POSITIVE `vault_withdrawal_threshold` already configured at POS
+        // load (not the Hoot suite's usual `0` no-op default), that reaches
+        // `_pcdcFetchVaultState()` and reads `this.vaultAlert.known` before
+        // this field existed, throwing `TypeError: Cannot read properties
+        // of undefined (reading 'known')` and aborting the whole POS boot.
         this.vaultAlert = reactive({
             required: false,
             expected: 0,
@@ -22,6 +31,7 @@ patch(PosStore.prototype, {
         });
         this._vaultRefreshPromise = null;
         this._vaultRefreshQueued = false;
+        await super.setup(...arguments);
         // design.md ADR-7: `data_service_patch.js` dispatches this event
         // when a replayed offline call was rejected by the server.
         window.addEventListener(
