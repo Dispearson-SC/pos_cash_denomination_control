@@ -23,7 +23,26 @@ i.e. wipe the dev database and filestore).
 scripts/test.sh                              # install + full addon test suite
 scripts/test.sh pos_hr                       # coexistence run, also installs pos_hr
 scripts/test.sh "" -- --test-tags pcdc_domain/pos_cash_denomination_control
+scripts/test.sh "" -- --test-tags pcdc_hoot/pos_cash_denomination_control
 ```
+
+### Hoot suite runs as part of the default `scripts/test.sh`
+
+`tests/test_hoot.py::TestHoot.test_hoot_suite` is a permanent `HttpCase` that
+runs `browser_js` against
+`/web/tests?headless&loglevel=2&preset=desktop&filter=@pos_cash_denomination_control`
+(the exact URL parameters and success signal confirmed in task 1.7) and
+fails the Python test whenever any Hoot assertion under this addon's `@`
+tag fails. It is tagged `post_install, -at_install` (same as
+`point_of_sale`'s own `TestUi` tour tests), and per the tag-union behavior
+documented below it still matches the bare `/pos_cash_denomination_control`
+filter, so a plain `scripts/test.sh` run with no override now actually
+exercises the addon's Hoot suite (currently the 4 tests in
+`static/tests/unit/cash_move_popup_cash_in.test.js`) instead of requiring a
+throwaway harness to be recreated for manual verification. Confirmed by
+temporarily breaking one Hoot assertion: the full suite reported
+`1 failed, 0 error(s) of 1 tests` with the real browser assertion diff, then
+passed again after the assertion was restored.
 
 `scripts/test.sh` always drops and recreates a disposable `pcdc_test`
 database via `docker compose run --rm`, so it never touches the `db`

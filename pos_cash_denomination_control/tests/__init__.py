@@ -7,3 +7,4 @@ from . import test_domain_text
 from . import test_domain_purity
 from . import test_install
 from . import test_cash_in_control
+from . import test_hoot
