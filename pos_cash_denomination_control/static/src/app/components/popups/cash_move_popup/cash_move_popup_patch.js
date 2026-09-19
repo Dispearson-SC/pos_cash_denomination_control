@@ -64,6 +64,17 @@ patch(CashMovePopup.prototype, {
         const defaultReason = this.pos.config.default_cash_out_reason_id;
         return defaultReason ? defaultReason.id : false;
     },
+    /**
+     * Bound method rather than an inline `t-on-change` arrow expression:
+     * an inline `parseInt(...)` call in the compiled template expression
+     * threw `TypeError: ... is not a function` at runtime against a real
+     * `<select>` `change` event (found via Phase 13's E2E tour — the Hoot
+     * unit tests never exercised this path, since they set
+     * `popup.state.reasonId` directly instead of dispatching a DOM event).
+     */
+    onReasonChange(ev) {
+        this.state.reasonId = ev.target.value ? parseInt(ev.target.value) : false;
+    },
     isValidCashMove() {
         return (
             this.env.utils.isValidFloat(this.state.amount) &&

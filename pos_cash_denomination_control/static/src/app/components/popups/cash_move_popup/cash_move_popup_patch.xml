@@ -15,7 +15,7 @@
         <xpath expr="//div[hasclass('form-floating')]" position="before">
             <div class="pcdc-reason-select-wrapper mb-2">
                 <select class="form-select pcdc-reason-select"
-                    t-on-change="(ev) => this.state.reasonId = ev.target.value ? parseInt(ev.target.value) : false">
+                    t-on-change="onReasonChange">
                     <option value="">-- Select a reason --</option>
                     <t t-foreach="availableReasons" t-as="reason" t-key="reason.id">
                         <option t-att-value="reason.id" t-att-selected="reason.id === state.reasonId">
