@@ -18,9 +18,17 @@ export function reasonsForMoveType(reasons, moveType) {
 /**
  * The first active vault reason, ordered by `sequence` then `id`.
  * Returns `undefined` when no active vault reason exists.
+ *
+ * `is_vault` is the only filter applied here: `pos.cash.move.reason`'s
+ * `_load_pos_data_fields` never delivers an `active` field to the frontend
+ * (see `models/pos_cash_move_reason.py`), so every loaded reason is already
+ * guaranteed active — `pos.load.mixin`'s `search()` call implicitly excludes
+ * inactive records server-side (Odoo's standard `active_test` behavior).
+ * Checking a client-side `.active` flag here would always be `undefined`
+ * and silently exclude every reason.
  */
 export function firstActiveVaultReason(reasons) {
     return reasons
-        .filter((reason) => reason.active && reason.is_vault)
+        .filter((reason) => reason.is_vault)
         .sort((a, b) => a.sequence - b.sequence || (a.id > b.id ? 1 : -1))[0];
 }

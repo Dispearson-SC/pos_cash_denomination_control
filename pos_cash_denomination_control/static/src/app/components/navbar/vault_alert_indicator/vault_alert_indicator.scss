@@ -1,0 +1,6 @@
+.vault-alert-indicator {
+    // Renders first among the navbar's status buttons regardless of sibling
+    // order (design.md Frontend/Patches: "Navbar" — CSS order:-1 puts it
+    // first without depending on sibling order).
+    order: -1;
+}
