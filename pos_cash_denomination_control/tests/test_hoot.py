@@ -35,7 +35,7 @@ class TestHoot(HttpCase):
             "",
             "",
             login="admin",
-            timeout=1800,
+            timeout=600,  # suite runs in seconds; fail fast instead of hanging 30 min
             success_signal="[HOOT] Test suite succeeded",
             error_checker=unit_test_error_checker,
         )
