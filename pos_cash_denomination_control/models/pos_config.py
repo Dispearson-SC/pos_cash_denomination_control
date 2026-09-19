@@ -11,6 +11,12 @@ Backs spec `cash-move-reasons` (Requirement: Default Cash-Out Reason On
 seeded "Vault" reason for every *newly created* config. Existing configs
 need `hooks.py::post_init_hook` to backfill the column, since the field
 default cannot resolve seed data before the column itself is created.
+
+Backs spec `vault-withdrawal-alert` (Requirement: Vault Withdrawal Threshold
+Field): `vault_withdrawal_threshold` is a Monetary field defaulting to `0`
+(disabled), with a SQL `CHECK` (same `models.Constraint` style already used
+by `pos.cash.move.reason`) as a defense-in-depth layer against a negative
+value from any caller that bypasses the ORM.
 """
 
 from odoo import fields, models
@@ -38,4 +44,15 @@ class PosConfig(models.Model):
         ),
         help="Reason preselected in the cash-out popup. Left empty (or "
         "archived), the cashier must pick a reason explicitly.",
+    )
+    vault_withdrawal_threshold = fields.Monetary(
+        currency_field="currency_id",
+        default=0,
+        help="Expected drawer cash at or above this amount triggers a "
+        "non-blocking vault withdrawal alert. Zero disables the alert.",
+    )
+
+    _vault_withdrawal_threshold_non_negative = models.Constraint(
+        "CHECK(vault_withdrawal_threshold >= 0)",
+        "The vault withdrawal threshold cannot be negative.",
     )

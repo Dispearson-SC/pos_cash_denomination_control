@@ -11,6 +11,10 @@
                         help="Allow cash-in operations for this point of sale. Off by default.">
                         <field name="pos_allow_cash_in"/>
                     </setting>
+                    <setting id="pcdc_vault_withdrawal_threshold" string="Vault Withdrawal Alert"
+                        help="Non-blocking alert shown when the expected drawer cash reaches this amount. Zero disables the alert.">
+                        <field name="pos_vault_withdrawal_threshold"/>
+                    </setting>
                 </block>
             </xpath>
         </field>

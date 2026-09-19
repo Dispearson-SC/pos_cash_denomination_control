@@ -9,3 +9,4 @@ from . import test_install
 from . import test_cash_in_control
 from . import test_hoot
 from . import test_reasons
+from . import test_vault_alert
