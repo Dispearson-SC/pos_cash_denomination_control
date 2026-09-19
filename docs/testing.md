@@ -98,6 +98,26 @@ full suite, to catch any conflict between this addon's patches and `pos_hr`'s
 own overrides of the same extension points (`try_cash_in_out`,
 `_set_opening_control_data`, `CashMovePopup`, ...).
 
+### End-to-end browser tours (Phase 13)
+
+```bash
+scripts/test.sh "" -- --test-tags /pos_cash_denomination_control:TestPcdcHttpCommon
+```
+
+`tests/test_frontend.py::TestPcdcHttpCommon` (tagged `post_install,
+-at_install, pcdc_tours`) runs one real headless-Chrome tour per scenario:
+opening/cash-out/closing with a denomination breakdown, cash-in disabled,
+reason/denomination rejection, the vault withdrawal alert's full lifecycle
+(including the one-click cash-out), and a dedicated tour confirming the
+offline replay queue is memory-only (lost on reload while still offline —
+see design.md's Discovery table, "Offline queue" row). These run as part of
+the default `scripts/test.sh` (no tag override needed); the command above
+is the fast way to re-run only this class during development. Every tour
+except the opening one logs in as `pos_admin`: the "Cash In/Out" menu
+option and the one-click vault cash-out both require
+`_has_cash_move_permission()` (`group_pos_manager` or
+`account.group_account_invoice`), which the plain `pos_user` fixture lacks.
+
 ## Confirmed image facts (Phase 1, task 1.6–1.9)
 
 - `from odoo.tests import BaseCase` exists; MRO is `odoo.tests.common.BaseCase
