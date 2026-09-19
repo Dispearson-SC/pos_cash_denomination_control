@@ -1,0 +1,816 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* pos_cash_denomination_control
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0-20260908\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-19 15:04+0000\n"
+"PO-Revision-Date: 2026-09-19 15:04+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+"Language: es\n"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.xml:0
+msgid "-- Select a reason --"
+msgstr "-- Selecciona un motivo --"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
+msgid ""
+"A cash move recorded while offline was rejected and NOT recorded: %s. Record"
+" it again."
+msgstr "Un movimiento de efectivo registrado sin conexión fue rechazado y NO se registró: %s. Regístralo de nuevo."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "A denomination breakdown is required for this operation."
+msgstr "Se requiere un desglose de denominaciones para esta operación."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_cash_denomination_count_line_count_bill_unique
+msgid "A denomination can only appear once per count."
+msgstr "Una denominación solo puede aparecer una vez por conteo."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "A reason is required for this cash move."
+msgstr "Se requiere un motivo para este movimiento de efectivo."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_move_reason__is_vault
+msgid "A vault reason can only be used for cash-out operations."
+msgstr "Un motivo de bóveda solo se puede usar para operaciones de salida de efectivo."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_cash_move_reason_is_vault_out_only
+msgid "A vault reason must have direction 'Out'."
+msgstr "Un motivo de bóveda debe tener dirección \"Salida\"."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__allow_cash_in
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_allow_cash_in
+msgid "Allow Cash In"
+msgstr "Permitir entrada de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__allow_cash_in
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_allow_cash_in
+msgid ""
+"Allow cash-in operations for this point of sale. Off by default, including "
+"for every point of sale that existed before this module was installed."
+msgstr "Permite operaciones de entrada de efectivo para este punto de venta. Desactivado de forma predeterminada, incluso para todo punto de venta que existía antes de instalar este módulo."
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Allow cash-in operations for this point of sale. Off by default."
+msgstr "Permite operaciones de entrada de efectivo para este punto de venta. Desactivado de forma predeterminada."
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_reason_search
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model,name:pos_cash_denomination_control.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "Línea de extracto bancario"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__bill_id
+msgid "Bill"
+msgstr "Billete"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__bill_name
+msgid "Bill Name"
+msgstr "Nombre del billete"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__bill_value
+msgid "Bill Value"
+msgstr "Valor del billete"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_move_reason__direction__both
+msgid "Both"
+msgstr "Ambos"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Cash Control"
+msgstr "Control de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_session__cash_count_ids
+msgid "Cash Count"
+msgstr "Conteo de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__cash_count_closing_required
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_closing_required
+msgid "Cash Count Closing Required"
+msgstr "Conteo de efectivo requerido al cierre"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__cash_count_in_required
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_in_required
+msgid "Cash Count In Required"
+msgstr "Conteo de efectivo requerido en entrada"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__cash_count_opening_required
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_opening_required
+msgid "Cash Count Opening Required"
+msgstr "Conteo de efectivo requerido en apertura"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__cash_count_out_required
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_out_required
+msgid "Cash Count Out Required"
+msgstr "Conteo de efectivo requerido en salida"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_denomination_count__move_type__in
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Cash In"
+msgstr "Entrada de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_account_bank_statement_line__cash_move_reason_id
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_reason_form
+msgid "Cash Move Reason"
+msgstr "Motivo del movimiento de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.actions.act_window,name:pos_cash_denomination_control.action_pos_cash_move_reason
+#: model:ir.ui.menu,name:pos_cash_denomination_control.menu_pos_cash_move_reason
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_reason_list
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_reason_search
+msgid "Cash Move Reasons"
+msgstr "Motivos de movimiento de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.ui.menu,name:pos_cash_denomination_control.menu_pos_cash_move_statement_line
+msgid "Cash Moves"
+msgstr "Movimientos de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_denomination_count__move_type__out
+msgid "Cash Out"
+msgstr "Salida de efectivo"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/closing_popup/closing_popup_patch.js:0
+msgid "Cash control - closing"
+msgstr "Control de efectivo - cierre"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/opening_control_popup/opening_control_popup_patch.js:0
+msgid "Cash control - opening"
+msgstr "Control de efectivo - apertura"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
+msgid "Cash in / out"
+msgstr "Entrada / salida de efectivo"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
+msgid "Cash move rejected"
+msgstr "Movimiento de efectivo rechazado"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.js:0
+msgid "Cash movement breakdown"
+msgstr "Desglose del movimiento de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Cash-In Denomination Count"
+msgstr "Conteo de denominaciones de entrada"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Cash-Out Denomination Count"
+msgstr "Conteo de denominaciones de salida"
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Cash-in operations are disabled for this point of sale."
+msgstr "Las operaciones de entrada de efectivo están deshabilitadas para este punto de venta."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Cash-move reason validation failed."
+msgstr "Falló la validación del motivo del movimiento de efectivo."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Cash-move type validation failed."
+msgstr "Falló la validación del tipo de movimiento de efectivo."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_session__closed_without_denomination_count
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_session_search_pcdc
+msgid "Closed Without Denomination Count"
+msgstr "Cerrado sin conteo de denominaciones"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_session__closed_without_denomination_count_date
+msgid "Closed Without Denomination Count Date"
+msgstr "Fecha de cierre sin conteo de denominaciones"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_session__closed_without_denomination_count_user_id
+msgid "Closed Without Denomination Count User"
+msgstr "Usuario que cerró sin conteo de denominaciones"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_denomination_count__move_type__closing
+msgid "Closing"
+msgstr "Cierre"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Closing Denomination Count"
+msgstr "Conteo de denominaciones de cierre"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__company_id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__company_id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model,name:pos_cash_denomination_control.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/denomination_breakdown_popup/denomination_breakdown_popup.xml:0
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__count_id
+msgid "Count"
+msgstr "Conteo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__create_uid
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__create_uid
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__create_date
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__create_date
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__currency_id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__date
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__date
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_search
+msgid "Date"
+msgstr "Fecha"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__default_cash_out_reason_id
+msgid "Default Cash-Out Reason"
+msgstr "Motivo predeterminado de salida de efectivo"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_search
+msgid "Denomination"
+msgstr "Denominación"
+
+#. module: pos_cash_denomination_control
+#: model:ir.actions.act_window,name:pos_cash_denomination_control.action_pos_cash_denomination_count_line
+#: model:ir.ui.menu,name:pos_cash_denomination_control.menu_pos_cash_denomination_count
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_list
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_search
+msgid "Denomination Counts"
+msgstr "Conteos de denominaciones"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_graph
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_pivot
+msgid "Denomination Counts Analysis"
+msgstr "Análisis de conteos de denominaciones"
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Denomination breakdown validation failed."
+msgstr "Falló la validación del desglose de denominaciones."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Denomination quantities cannot be negative."
+msgstr "Las cantidades de denominaciones no pueden ser negativas."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Denomination quantities must be whole numbers."
+msgstr "Las cantidades de denominaciones deben ser números enteros."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__direction
+msgid "Direction"
+msgstr "Dirección"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_account_bank_statement_line__display_name
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__display_name
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__display_name
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__display_name
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__display_name
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_session__display_name
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Each denomination can only appear once in a breakdown."
+msgstr "Cada denominación solo puede aparecer una vez en un desglose."
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_search
+msgid "Employee"
+msgstr "Empleado"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__employee_name
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__employee_name
+msgid "Employee Name"
+msgstr "Nombre del empleado"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__employee_ref
+msgid "Employee Ref"
+msgstr "Referencia del empleado"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/opening_control_popup/opening_control_popup_patch.js:0
+msgid "Enter the opening cash breakdown before confirming."
+msgstr "Ingresa el desglose de efectivo de apertura antes de confirmar."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__vault_withdrawal_threshold
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_vault_withdrawal_threshold
+msgid ""
+"Expected drawer cash at or above this amount triggers a non-blocking vault "
+"withdrawal alert. Zero disables the alert."
+msgstr "El efectivo esperado en caja igual o superior a este monto activa una alerta no bloqueante de retiro a bóveda. Cero desactiva la alerta."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_account_bank_statement_line__id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_session__id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__id
+msgid "ID"
+msgstr "ID"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_move_reason__direction__in
+msgid "In"
+msgstr "Entrada"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__write_uid
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__write_uid
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__write_date
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__write_date
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_move_reason__company_id
+msgid "Leave empty to share this reason across every company."
+msgstr "Deja vacío para compartir este motivo entre todas las compañías."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__line_ids
+msgid "Line"
+msgstr "Línea"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__move_type
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__move_type
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_search
+msgid "Move Type"
+msgstr "Tipo de movimiento"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid ""
+"Non-blocking alert shown when the expected drawer cash reaches this amount. "
+"Zero disables the alert."
+msgstr "Alerta no bloqueante que se muestra cuando el efectivo esperado en caja alcanza este monto. Cero desactiva la alerta."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__note
+msgid "Note"
+msgstr "Nota"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.xml:0
+msgid "Note (optional)"
+msgstr "Nota (opcional)"
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/pos_session.py:0
+msgid ""
+"Only a point of sale manager can close this session without a recorded "
+"closing denomination count."
+msgstr "Solo un gerente del punto de venta puede cerrar esta sesión sin un conteo de denominaciones de cierre registrado."
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.xml:0
+msgid "Open the denomination breakdown popup"
+msgstr "Abrir la ventana de desglose de denominaciones"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_denomination_count__move_type__opening
+msgid "Opening"
+msgstr "Apertura"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Opening Denomination Count"
+msgstr "Conteo de denominaciones de apertura"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
+msgid "Opening rejected"
+msgstr "Apertura rechazada"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_move_reason__direction__out
+msgid "Out"
+msgstr "Salida"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model,name:pos_cash_denomination_control.model_pos_cash_denomination_count
+msgid "POS Cash Denomination Count"
+msgstr "Conteo de denominaciones de efectivo del PdV"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model,name:pos_cash_denomination_control.model_pos_cash_denomination_count_line
+msgid "POS Cash Denomination Count Line"
+msgstr "Línea de conteo de denominaciones de efectivo del PdV"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model,name:pos_cash_denomination_control.model_pos_cash_move_reason
+msgid "POS Cash Move Reason"
+msgstr "Motivo de movimiento de efectivo del PdV"
+
+#. module: pos_cash_denomination_control
+#: model:ir.actions.act_window,name:pos_cash_denomination_control.action_pos_cash_move_statement_line
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_statement_line_list
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_statement_line_search
+msgid "POS Cash Moves"
+msgstr "Movimientos de efectivo del PdV"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__config_id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__config_id
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_search
+msgid "Point of Sale"
+msgstr "Punto de Venta"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model,name:pos_cash_denomination_control.model_pos_config
+msgid "Point of Sale Configuration"
+msgstr "Configuración del Punto de Venta"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model,name:pos_cash_denomination_control.model_pos_session
+msgid "Point of Sale Session"
+msgstr "Sesión del Punto de Venta"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_denomination_count__reason_id
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_denomination_count_line__reason_id
+msgid "Populated only for cash IN/OUT move types."
+msgstr "Se completa solo para los tipos de movimiento de entrada/salida de efectivo."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_account_bank_statement_line__pos_cash_count_id
+msgid "Pos Cash Count"
+msgstr "Conteo de efectivo del PdV"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__quantity
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__reason_id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__reason_id
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_search
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_statement_line_search
+msgid "Reason"
+msgstr "Motivo"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__default_cash_out_reason_id
+msgid ""
+"Reason preselected in the cash-out popup. Left empty (or archived), the "
+"cashier must pick a reason explicitly."
+msgstr "Motivo preseleccionado en la ventana de salida de efectivo. Si se deja vacío (o está archivado), el cajero debe elegir un motivo explícitamente."
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Require a denomination breakdown for cash-in operations."
+msgstr "Requiere un desglose de denominaciones para las operaciones de entrada de efectivo."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__cash_count_in_required
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_in_required
+msgid ""
+"Require a denomination breakdown for cash-in operations. Has no effect while"
+" cash-in is disabled for this point of sale."
+msgstr "Requiere un desglose de denominaciones para las operaciones de entrada de efectivo. No tiene efecto mientras la entrada de efectivo esté deshabilitada para este punto de venta."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__cash_count_out_required
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_out_required
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Require a denomination breakdown for cash-out operations."
+msgstr "Requiere un desglose de denominaciones para las operaciones de salida de efectivo."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__cash_count_closing_required
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_closing_required
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Require a denomination breakdown when closing the session."
+msgstr "Requiere un desglose de denominaciones al cerrar la sesión."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__cash_count_opening_required
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_cash_count_opening_required
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Require a denomination breakdown when opening the session."
+msgstr "Requiere un desglose de denominaciones al abrir la sesión."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__session_id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__session_id
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_statement_line_search
+msgid "Session"
+msgstr "Sesión"
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/pos_session.py:0
+msgid ""
+"Session closed without a recorded closing denomination count by %(user)s "
+"(manager override)."
+msgstr "Sesión cerrada sin un conteo de denominaciones de cierre registrado por %(user)s (anulación de gerente)."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_session__closed_without_denomination_count
+msgid ""
+"Set when a POS manager closed this session without a recorded closing "
+"denomination count (spec `closing-manager-override`)."
+msgstr "Se establece cuando un gerente del PdV cerró esta sesión sin un conteo de denominaciones de cierre registrado (spec `closing-manager-override`)."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_denomination_count__employee_name
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_denomination_count_line__employee_name
+msgid "Snapshot of the employee's name."
+msgstr "Instantánea del nombre del empleado."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_denomination_count__employee_ref
+msgid ""
+"Soft reference to hr.employee.id (design.md ADR-8) — no hard dependency on "
+"hr/pos_hr."
+msgstr "Referencia flexible a hr.employee.id (design.md ADR-8); sin dependencia estricta de hr/pos_hr."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__statement_line_ids
+msgid "Statement Line"
+msgstr "Línea de extracto"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_cash_denomination_count_line__bill_id
+msgid ""
+"Stock bill deletion is not blocked; the snapshot fields below keep the "
+"historical name/value."
+msgstr "La eliminación del billete de inventario no está bloqueada; los campos de instantánea a continuación conservan el nombre/valor histórico."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__subtotal
+msgid "Subtotal"
+msgstr "Subtotal"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_cash_denomination_count_line_quantity_non_negative
+msgid "The counted quantity cannot be negative."
+msgstr "La cantidad contada no puede ser negativa."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_cash_denomination_count_total_non_negative
+msgid "The counted total cannot be negative."
+msgstr "El total contado no puede ser negativo."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid ""
+"The denomination breakdown (%(total)s) does not match the declared amount "
+"(%(amount)s)."
+msgstr "El desglose de denominaciones (%(total)s) no coincide con el monto declarado (%(amount)s)."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "The denomination breakdown is malformed."
+msgstr "El desglose de denominaciones tiene un formato incorrecto."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_session__closed_without_denomination_count_user_id
+msgid ""
+"The manager who closed this session without a recorded closing denomination "
+"count."
+msgstr "El gerente que cerró esta sesión sin un conteo de denominaciones de cierre registrado."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "The selected cash-move reason does not exist."
+msgstr "El motivo de movimiento de efectivo seleccionado no existe."
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
+msgid "The session opening was rejected: %s."
+msgstr "La apertura de la sesión fue rechazada: %s."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_config_vault_withdrawal_threshold_non_negative
+msgid "The vault withdrawal threshold cannot be negative."
+msgstr "El umbral de retiro a bóveda no puede ser negativo."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "This cash-move reason cannot be used for this move type."
+msgstr "Este motivo de movimiento de efectivo no se puede usar para este tipo de movimiento."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "This cash-move reason does not belong to this company."
+msgstr "Este motivo de movimiento de efectivo no pertenece a esta compañía."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "This cash-move reason is archived and cannot be used."
+msgstr "Este motivo de movimiento de efectivo está archivado y no se puede usar."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "This denomination is not allowed for this point of sale."
+msgstr "Esta denominación no está permitida para este punto de venta."
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/denomination_breakdown_popup/denomination_breakdown_popup.xml:0
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__total
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_line_list
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_statement_line_list
+msgid "Total"
+msgstr "Total"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/utils/breakdown.js:0
+msgid "Total: %s"
+msgstr "Total: %s"
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/domain_errors.py:0
+msgid "Unknown cash-move type: %(move_type)s."
+msgstr "Tipo de movimiento de efectivo desconocido: %(move_type)s."
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count__user_id
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__user_id
+msgid "User"
+msgstr "Usuario"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__is_vault
+#: model:pos.cash.move.reason,name:pos_cash_denomination_control.pos_cash_move_reason_vault
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_reason_search
+msgid "Vault"
+msgstr "Bóveda"
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Vault Withdrawal Alert"
+msgstr "Alerta de retiro a bóveda"
+
+#. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__vault_withdrawal_threshold
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_vault_withdrawal_threshold
+msgid "Vault Withdrawal Threshold"
+msgstr "Umbral de retiro a bóveda"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/navbar/vault_alert_indicator/vault_alert_indicator.xml:0
+#: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
+msgid "Vault withdrawal required"
+msgstr "Retiro a bóveda requerido"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/navbar/vault_alert_indicator/vault_alert_indicator.js:0
+msgid "You don't have permission to record cash movements."
+msgstr "No tienes permiso para registrar movimientos de efectivo."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/pos_session.py:0
+msgid ""
+"You don't have the access rights to get the point of sale vault withdrawal "
+"state."
+msgstr "No tienes los permisos de acceso para obtener el estado de retiro a bóveda del punto de venta."
+
+#. module: pos_cash_denomination_control
+#. odoo-python
+#: code:addons/pos_cash_denomination_control/models/pos_session.py:0
+msgid "You don't have the access rights to perform a cash in/out."
+msgstr "No tienes los permisos de acceso para realizar una entrada/salida de efectivo."
