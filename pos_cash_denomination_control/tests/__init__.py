@@ -12,3 +12,7 @@ from . import test_reasons
 from . import test_vault_alert
 from . import test_denomination_config
 from . import test_counts
+from . import test_enforcement_opening
+from . import test_enforcement_cash_moves
+from . import test_enforcement_closing
+from . import test_enforcement_replay

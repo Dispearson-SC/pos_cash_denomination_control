@@ -34,18 +34,57 @@ only when `pos_hr` actually added that field). The name is resolved only
 when `'hr.employee' in self.env`, since referential integrity for cash
 moves already exists on `account.bank.statement.line.employee_id`
 (`pos_hr/models/account_bank_statement.py`).
+
+Backs spec `cash-denomination-enforcement`: `set_opening_control`,
+`try_cash_in_out`, and `post_closing_cash_details` each require a
+denomination breakdown whenever their matching `pos.config` toggle is on,
+via `domain.breakdown.validate_breakdown`, and persist an accepted
+breakdown through `_pcdc_create_count`. `_pcdc_validate_and_maybe_persist`
+is the one place that resolves toggles/allowed-bills/rounding fresh from
+`self.config_id` on every call (spec Requirement: Offline Replay Safety —
+no caching, so a queued RPC is validated against the server's state *at
+replay time*).
+
+`set_opening_control(cashbox_value, notes, denomination_lines=None)`
+follows design.md ADR-1: the public method only stashes `denomination_lines`
+into context and delegates to `super()` unmodified — core's own docstring
+says "DO NOT INHERIT THIS METHOD. Inherit `_set_opening_control_data`
+instead", and `pos_hr` overrides `_set_opening_control_data` with a fixed
+`(self, cashbox_value: int, notes: str)` signature
+(`pos_hr/models/pos_session.py:23`), so adding a positional/keyword
+argument anywhere in that override chain risks a `TypeError` depending on
+MRO order. Threading the value through `self.env.context` sidesteps that
+entirely: every override in the chain keeps calling `super()` with the
+original two-argument signature.
 """
 
 from odoo import api, models
 from odoo.exceptions import AccessError
 from odoo.tools.translate import _
 
-from ..domain.cash_moves import validate_move_type
+from ..domain.breakdown import validate_breakdown
+from ..domain.cash_moves import CountToggles, count_required, validate_move_type
 from ..domain.cash_position import compute_expected_cash, is_withdrawal_required
-from ..domain.errors import MoveTypeError, ReasonError
+from ..domain.errors import BreakdownError, MoveTypeError, ReasonError
 from ..domain.reasons import validate_reason
 from ..domain.text import compose_payment_text
 from .domain_errors import raise_domain_error
+
+
+def _pcdc_freeze_lines(raw):
+    """Turn a list of `{"bill_id", "quantity"}` dicts into a tuple of
+    `(bill_id, quantity)` pairs, so the value is safe to carry on
+    `self.env.context` (design.md ADR-1 / Server Flows "Opening")."""
+    if raw is None:
+        return None
+    return tuple((entry.get("bill_id"), entry.get("quantity")) for entry in raw)
+
+
+def _pcdc_thaw_lines(frozen):
+    """Inverse of `_pcdc_freeze_lines`."""
+    if frozen is None:
+        return None
+    return [{"bill_id": bill_id, "quantity": quantity} for bill_id, quantity in frozen]
 
 
 class PosSession(models.Model):
@@ -72,12 +111,18 @@ class PosSession(models.Model):
 
     def try_cash_in_out(self, _type, amount, reason, partner_id=False, extras=None):
         """Explicit guard-clause order, matching design.md's Server Flows
-        "Cash IN/OUT" sequence: permission, move type, reason, [breakdown —
-        Phase 9], then `super()` persists the statement line.
+        "Cash IN/OUT" sequence: permission, move type, reason, breakdown,
+        then `super()` persists the statement line.
 
         Step 1 duplicates `super()`'s own `_has_cash_move_permission()`
         check (same message) so a caller without permission never reaches
         our reason lookup or validation; `super()` still re-checks it.
+
+        Step 4 creates the count header (when a breakdown is required or
+        supplied) *before* calling `super()`, so its id can travel through
+        `self.env.context['pcdc_count_by_session']` into
+        `_prepare_account_bank_statement_line_vals`, which sets
+        `pos_cash_count_id` on the just-created statement line.
         """
         extras = extras or {}
         # 1. permission (super() re-checks; duplicated so our own checks
@@ -90,6 +135,7 @@ class PosSession(models.Model):
             reason_record = self._pcdc_reason_record(extras)
         except ReasonError as exc:
             raise_domain_error(exc)
+        count_by_session = {}
         for session in self.filtered("cash_journal_id"):
             # 2. move type
             try:
@@ -102,8 +148,18 @@ class PosSession(models.Model):
                 validate_reason(snapshot, _type, session.company_id.id)
             except ReasonError as exc:
                 raise_domain_error(exc)
-            # 4. breakdown — Phase 9 (denomination-enforcement) inserts its
-            #    `domain.breakdown.validate_breakdown(...)` guard here.
+            # 4. breakdown
+            _bd, _bills, header = session._pcdc_validate_and_maybe_persist(
+                _type,
+                extras.get("denomination_lines"),
+                amount,
+                reason=reason_record or None,
+                note=extras.get("note"),
+                extras=extras,
+            )
+            if header:
+                count_by_session[session.id] = header.id
+        self = self.with_context(pcdc_count_by_session=count_by_session)
         return super().try_cash_in_out(_type, amount, reason, partner_id, extras)
 
     def _prepare_account_bank_statement_line_vals(
@@ -123,6 +179,9 @@ class PosSession(models.Model):
             session, sign, amount, text, partner_id, extras
         )
         vals["cash_move_reason_id"] = reason_record.id
+        count_id = self.env.context.get("pcdc_count_by_session", {}).get(session.id)
+        if count_id:
+            vals["pos_cash_count_id"] = count_id
         return vals
 
     def _pcdc_default_cash_payment_amounts(self):
@@ -273,3 +332,115 @@ class PosSession(models.Model):
             ]
         )
         return header
+
+    def _pcdc_count_toggles(self, config):
+        """Snapshot the four `cash_count_*_required` toggles plus
+        `allow_cash_in` into a `domain.cash_moves.CountToggles`."""
+        return CountToggles(
+            cash_in_enabled=config.allow_cash_in,
+            opening_required=config.cash_count_opening_required,
+            out_required=config.cash_count_out_required,
+            in_required=config.cash_count_in_required,
+            closing_required=config.cash_count_closing_required,
+        )
+
+    def _pcdc_allowed_bills(self, config):
+        """The `pos.bill` recordset allowed for `config`, using the exact
+        same domain the POS frontend loads (`pos.bill._load_pos_data_domain`)
+        — reused so server-side validation always matches what the POS
+        offered the cashier, including any third-party override of that
+        domain."""
+        Bill = self.env["pos.bill"]
+        return Bill.search(Bill._load_pos_data_domain({}, config))
+
+    def _pcdc_validate_and_maybe_persist(
+        self, move_type, raw_lines, amount, persist=True, **attribution
+    ):
+        """Validate `raw_lines` for `move_type` against `amount` on `self`
+        (one session), and — when `persist` is `True` (the default) and a
+        breakdown was supplied — immediately create the count header+lines
+        via `_pcdc_create_count(move_type, breakdown, bills, **attribution)`.
+
+        Toggles, allowed bills, and currency rounding are resolved fresh
+        from `self.config_id` on *every* call (spec
+        `cash-denomination-enforcement`, Requirement: Offline Replay
+        Safety) — nothing here is cached across requests, so a
+        replayed/queued RPC is always validated against the server's
+        current configuration.
+
+        `try_cash_in_out` uses the `persist=True` default: it needs the
+        header immediately, to thread its id through context into
+        `_prepare_account_bank_statement_line_vals`.
+        `_set_opening_control_data` and `post_closing_cash_details` pass
+        `persist=False`: they must call `super()` first and persist the
+        count only once `super()` actually succeeds (design.md's Opening
+        and Closing Server Flows), so they call `_pcdc_create_count`
+        themselves afterward using the returned `(breakdown, bills)`.
+
+        Returns `(breakdown_or_none, allowed_bills_recordset, header_or_none)`.
+        """
+        self.ensure_one()
+        config = self.config_id
+        toggles = self._pcdc_count_toggles(config)
+        required = count_required(move_type, toggles, config.cash_control)
+        bills = self._pcdc_allowed_bills(config)
+        allowed_bills = {bill.id: bill.value for bill in bills}
+        try:
+            bd = validate_breakdown(
+                raw_lines, amount, allowed_bills, config.currency_id.rounding, required
+            )
+        except BreakdownError as exc:
+            raise_domain_error(exc)
+        header = None
+        if bd and persist:
+            header = self._pcdc_create_count(move_type, bd, bills, **attribution)
+        return bd, bills, header
+
+    def set_opening_control(self, cashbox_value, notes, denomination_lines=None):
+        """Additive kwarg (ADR-1): only stashes `denomination_lines` into
+        context and delegates to `super()` unmodified. All breakdown
+        validation and persistence lives in `_set_opening_control_data`
+        instead, which reads the context value back — DO NOT add business
+        logic to this method; extend `_set_opening_control_data`.
+        """
+        self = self.with_context(
+            pcdc_opening_lines=_pcdc_freeze_lines(denomination_lines)
+        )
+        return super().set_opening_control(cashbox_value, notes)
+
+    def _set_opening_control_data(self, cashbox_value, notes):
+        self.ensure_one()
+        raw_lines = _pcdc_thaw_lines(self.env.context.get("pcdc_opening_lines"))
+        bd, bills, _header = self._pcdc_validate_and_maybe_persist(
+            "opening", raw_lines, cashbox_value, persist=False
+        )
+        super()._set_opening_control_data(cashbox_value, notes)
+        if bd:
+            self._pcdc_create_count("opening", bd, bills, note=notes)
+
+    def post_closing_cash_details(self, counted_cash, denomination_lines=None):
+        """Additive kwarg. Unlike `set_opening_control`
+        (`_set_opening_control_data` has a fixed-signature override in
+        `pos_hr`), no other module in this addon's dependency chain
+        overrides `post_closing_cash_details`, so the kwarg is added
+        directly here — no context indirection needed.
+
+        Validates before `super()` (a rejected breakdown leaves
+        `cash_register_balance_end_real` untouched); persists the closing
+        header only when `super()` reports `successful`, so a closing
+        blocked by open draft orders (`_cannot_close_session`, which
+        returns a dict instead of raising) never leaves a stray header for
+        an amount that was never actually recorded. Any previous closing
+        header for this session is unlinked first, so retrying an initial
+        rejected/blocked closing does not accumulate duplicates."""
+        self.ensure_one()
+        bd, bills, _header = self._pcdc_validate_and_maybe_persist(
+            "closing", denomination_lines, counted_cash, persist=False
+        )
+        result = super().post_closing_cash_details(counted_cash)
+        if bd and result.get("successful"):
+            self.env["pos.cash.denomination.count"].sudo().search(
+                [("session_id", "=", self.id), ("move_type", "=", "closing")]
+            ).unlink()
+            self._pcdc_create_count("closing", bd, bills)
+        return result

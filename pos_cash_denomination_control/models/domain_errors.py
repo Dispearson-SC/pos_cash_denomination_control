@@ -10,7 +10,7 @@ only. Later phases extend `_MESSAGE_BUILDERS` for `BreakdownError` and
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
-from ..domain.errors import MoveTypeError, ReasonError
+from ..domain.errors import BreakdownError, MoveTypeError, ReasonError
 
 
 def _move_type_message(exc):
@@ -40,9 +40,33 @@ def _reason_message(exc):
     return _("Cash-move reason validation failed.")
 
 
+def _breakdown_message(exc):
+    if exc.code == "MISSING":
+        return _("A denomination breakdown is required for this operation.")
+    if exc.code == "MALFORMED":
+        return _("The denomination breakdown is malformed.")
+    if exc.code == "NON_INTEGER_QUANTITY":
+        return _("Denomination quantities must be whole numbers.")
+    if exc.code == "NEGATIVE_QUANTITY":
+        return _("Denomination quantities cannot be negative.")
+    if exc.code == "BILL_NOT_ALLOWED":
+        return _("This denomination is not allowed for this point of sale.")
+    if exc.code == "DUPLICATE_BILL":
+        return _("Each denomination can only appear once in a breakdown.")
+    if exc.code == "TOTAL_MISMATCH":
+        return _(
+            "The denomination breakdown (%(total)s) does not match the "
+            "declared amount (%(amount)s).",
+            total=exc.params.get("total"),
+            amount=exc.params.get("amount"),
+        )
+    return _("Denomination breakdown validation failed.")
+
+
 _MESSAGE_BUILDERS = {
     MoveTypeError: _move_type_message,
     ReasonError: _reason_message,
+    BreakdownError: _breakdown_message,
 }
 
 
