@@ -42,12 +42,31 @@ odoo`.
 ### Fast domain-only loop (Phase 2 onward)
 
 ```bash
-scripts/test.sh "" -- --test-tags /pos_cash_denomination_control:pcdc_domain
+scripts/test.sh "" -- --test-tags pcdc_domain/pos_cash_denomination_control
 ```
 
 This runs only the pure-Python domain tests (`odoo.tests.BaseCase`, no
 database access), which is the fastest feedback loop while iterating on
 `domain/*.py`.
+
+**Tag filter syntax gotcha (Phase 2, confirmed empirically)**: Odoo's
+`--test-tags` grammar is `[+-]tag[/module][:class][.method]` — the custom
+**tag comes first**, then an optional `/module`, then an optional `:class`.
+Writing `/pos_cash_denomination_control:pcdc_domain` (module first, tag
+after the colon) does **not** filter by the `pcdc_domain` tag: it is parsed
+as `module=pos_cash_denomination_control, class=pcdc_domain`, which matches
+no class named literally `pcdc_domain` and silently runs **zero tests**
+("0 failed, 0 error(s) of 0 tests" — logged as if everything passed). This
+is the same class of trap as the `websocket-client` skip from Phase 1:
+always check that the reported test count is **greater than zero** before
+trusting a green result. The correct form is `tag/module`, e.g.
+`pcdc_domain/pos_cash_denomination_control`. The full default suite
+(`scripts/test.sh`, no override) is unaffected because it uses the bare
+`/pos_cash_denomination_control` filter with no class segment, which
+correctly matches every `standard`-tagged test in the module (the `tagged()`
+decorator unions with, rather than replaces, the default `{"standard",
+"at_install"}` tags that `odoo.tests.common.BaseCase.__init_subclass__`
+assigns).
 
 ### `pos_hr` coexistence run
 
