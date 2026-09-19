@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_cash_denomination_control.ClosePosPopup" t-inherit="point_of_sale.ClosePosPopup" t-inherit-mode="extension">
+        <xpath expr="//Input[contains(@class,'cash-input')]" position="attributes">
+            <attribute name="readonly">pcdcClosingCountRequired</attribute>
+        </xpath>
+        <xpath expr="//button[@t-on-click='autoFillCashCount']" position="attributes">
+            <attribute name="t-if">!pcdcClosingCountRequired</attribute>
+        </xpath>
+    </t>
+</templates>

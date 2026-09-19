@@ -4,6 +4,14 @@
         <xpath expr="//button[contains(@t-on-click, &quot;'in'&quot;)]" position="attributes">
             <attribute name="t-if">pos.config.allow_cash_in</attribute>
         </xpath>
+        <xpath expr="//Input" position="attributes">
+            <attribute name="readonly">ui.isSmall or pcdcCountRequired</attribute>
+        </xpath>
+        <xpath expr="//Input" position="after">
+            <div t-if="pcdcCountRequired" class="button icon btn btn-secondary btn-lg lh-lg" t-on-click="openNumpadDialog">
+                <i class="fa fa-money" role="img" title="Open the denomination breakdown popup"/>
+            </div>
+        </xpath>
         <xpath expr="//div[hasclass('form-floating')]" position="before">
             <div class="pcdc-reason-select-wrapper mb-2">
                 <select class="form-select pcdc-reason-select"

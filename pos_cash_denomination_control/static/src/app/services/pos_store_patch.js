@@ -2,6 +2,7 @@ import { PosStore } from "@point_of_sale/app/services/pos_store";
 import { patch } from "@web/core/utils/patch";
 import { reactive } from "@odoo/owl";
 import { CashMovePopup } from "@point_of_sale/app/components/popups/cash_move_popup/cash_move_popup";
+import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { makeAwaitable } from "@point_of_sale/app/utils/make_awaitable_dialog";
 import { _t } from "@web/core/l10n/translation";
 
@@ -21,6 +22,38 @@ patch(PosStore.prototype, {
         });
         this._vaultRefreshPromise = null;
         this._vaultRefreshQueued = false;
+        // design.md ADR-7: `data_service_patch.js` dispatches this event
+        // when a replayed offline call was rejected by the server.
+        window.addEventListener(
+            "pcdc-replay-rejected",
+            this._pcdcOnReplayRejected.bind(this)
+        );
+    },
+
+    /**
+     * ADR-7: the operator is told explicitly instead of the rejection
+     * silently blocking the rest of the offline queue.
+     */
+    _pcdcOnReplayRejected({ detail: { method, message } }) {
+        if (method === "try_cash_in_out") {
+            this.dialog.add(AlertDialog, {
+                title: _t("Cash move rejected"),
+                body: _t(
+                    "A cash move recorded while offline was rejected and NOT recorded: %s. Record it again.",
+                    message
+                ),
+            });
+            this.refreshVaultState();
+        } else if (method === "set_opening_control") {
+            this.dialog.add(
+                AlertDialog,
+                {
+                    title: _t("Opening rejected"),
+                    body: _t("The session opening was rejected: %s.", message),
+                },
+                { onClose: () => window.location.reload() }
+            );
+        }
     },
 
     async afterProcessServerData() {
