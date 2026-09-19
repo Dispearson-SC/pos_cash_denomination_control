@@ -23,6 +23,17 @@ then delegates the arithmetic to the pure `domain.cash_position` module. It
 deliberately does NOT override `get_closing_control_data` itself (design.md
 ADR-4): that method is also extended by `pos_hr`, and widening its blast
 radius is unnecessary when a parity test can guard the two formulas instead.
+
+Backs spec `cash-count-records` (Requirement: Employee Attribution Without
+Hard `pos_hr` Dependency): `_pcdc_resolve_employee` implements design.md's
+ADR-8 soft reference — an employee id plus a name snapshot, with no hard
+`hr`/`pos_hr` dependency. Cash moves read `extras['employee_id']` (the key
+`pos_hr`'s own `CashMovePopup` patch injects); opening/closing read
+`session.employee_id`, only when `'employee_id' in session._fields` (i.e.
+only when `pos_hr` actually added that field). The name is resolved only
+when `'hr.employee' in self.env`, since referential integrity for cash
+moves already exists on `account.bank.statement.line.employee_id`
+(`pos_hr/models/account_bank_statement.py`).
 """
 
 from odoo import api, models
@@ -183,3 +194,82 @@ class PosSession(models.Model):
             "threshold": threshold,
             "required": required,
         }
+
+    def _pcdc_resolve_employee(self, move_type, extras=None):
+        """`(employee_id, employee_name)` for a count header, per
+        design.md ADR-8. Cash moves (`in`/`out`) read
+        `extras['employee_id']`; opening/closing read `session.employee_id`
+        only when that field exists on this session (`pos_hr` installed).
+        The name is resolved only when `hr.employee` is a registered
+        model."""
+        self.ensure_one()
+        if move_type in ("in", "out"):
+            employee_id = (extras or {}).get("employee_id") or None
+        elif "employee_id" in self._fields and self.employee_id:
+            employee_id = self.employee_id.id
+        else:
+            employee_id = None
+
+        employee_name = False
+        if employee_id and "hr.employee" in self.env:
+            employee = self.env["hr.employee"].sudo().browse(employee_id).exists()
+            employee_name = employee.name if employee else False
+
+        return employee_id, employee_name
+
+    def _pcdc_create_count(
+        self,
+        move_type,
+        breakdown,
+        bills,
+        reason=None,
+        note=None,
+        statement_line=None,
+        extras=None,
+    ):
+        """Create one `pos.cash.denomination.count` header plus its lines
+        for `breakdown` (a `domain.breakdown.Breakdown`), the single header
+        + lines creation path shared by every enforcement site: Phase 9's
+        `_set_opening_control_data`/`try_cash_in_out`/
+        `post_closing_cash_details`, and Phase 10's closing override.
+
+        `bills` is the `pos.bill` recordset `breakdown`'s lines were
+        validated against (`domain.breakdown.validate_breakdown`'s
+        `allowed_bills`), used only to snapshot each line's `bill_name`.
+
+        Runs in `sudo()`: the header and line models grant no create
+        access to any group (design.md Data Model: "All writes go through
+        adapter code in sudo()")."""
+        self.ensure_one()
+        employee_id, employee_name = self._pcdc_resolve_employee(move_type, extras)
+        header = self.env["pos.cash.denomination.count"].sudo().create(
+            {
+                "session_id": self.id,
+                "move_type": move_type,
+                "total": breakdown.total,
+                "user_id": self.env.user.id,
+                "employee_ref": employee_id or False,
+                "employee_name": employee_name,
+                "reason_id": reason.id if reason else False,
+                "note": note,
+                "statement_line_ids": (
+                    [(6, 0, statement_line.ids)] if statement_line else False
+                ),
+            }
+        )
+        bills_by_id = {bill.id: bill for bill in bills}
+        self.env["pos.cash.denomination.count.line"].sudo().create(
+            [
+                {
+                    "count_id": header.id,
+                    "bill_id": line.bill_id,
+                    "bill_name": bills_by_id[line.bill_id].name
+                    if line.bill_id in bills_by_id
+                    else False,
+                    "bill_value": line.bill_value,
+                    "quantity": line.quantity,
+                }
+                for line in breakdown.lines
+            ]
+        )
+        return header

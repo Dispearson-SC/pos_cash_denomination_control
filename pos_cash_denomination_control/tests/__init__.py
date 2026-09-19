@@ -10,3 +10,5 @@ from . import test_cash_in_control
 from . import test_hoot
 from . import test_reasons
 from . import test_vault_alert
+from . import test_denomination_config
+from . import test_counts

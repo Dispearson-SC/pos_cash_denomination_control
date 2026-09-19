@@ -17,6 +17,14 @@ Field): `vault_withdrawal_threshold` is a Monetary field defaulting to `0`
 (disabled), with a SQL `CHECK` (same `models.Constraint` style already used
 by `pos.cash.move.reason`) as a defense-in-depth layer against a negative
 value from any caller that bypasses the ORM.
+
+Backs spec `cash-denomination-config`: the four `cash_count_*_required`
+toggles are independent stored Booleans defaulting to `False`, so every
+existing config also gets them off the moment the columns are created by
+this module's install (same "no post-init hook needed" reasoning as
+`allow_cash_in`). Enforcement itself (`cash-denomination-enforcement`) is
+Phase 9; this field only decides, per operation type, whether a breakdown
+will be required once that enforcement lands.
 """
 
 from odoo import fields, models
@@ -50,6 +58,23 @@ class PosConfig(models.Model):
         default=0,
         help="Expected drawer cash at or above this amount triggers a "
         "non-blocking vault withdrawal alert. Zero disables the alert.",
+    )
+    cash_count_opening_required = fields.Boolean(
+        default=False,
+        help="Require a denomination breakdown when opening the session.",
+    )
+    cash_count_out_required = fields.Boolean(
+        default=False,
+        help="Require a denomination breakdown for cash-out operations.",
+    )
+    cash_count_in_required = fields.Boolean(
+        default=False,
+        help="Require a denomination breakdown for cash-in operations. "
+        "Has no effect while cash-in is disabled for this point of sale.",
+    )
+    cash_count_closing_required = fields.Boolean(
+        default=False,
+        help="Require a denomination breakdown when closing the session.",
     )
 
     _vault_withdrawal_threshold_non_negative = models.Constraint(

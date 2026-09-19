@@ -9,4 +9,18 @@
         <field name="model_id" ref="model_pos_cash_move_reason"/>
         <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
     </record>
+
+    <!-- Backs specs/cash-count-records/spec.md "Reporting Views, Menu,
+         Access, And Record Rules": header and lines are scoped strictly to
+         the record's own company, unlike the shareable reason catalog. -->
+    <record id="rule_pos_cash_denomination_count_multi_company" model="ir.rule">
+        <field name="name">POS Cash Denomination Count Multi-Company</field>
+        <field name="model_id" ref="model_pos_cash_denomination_count"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_pos_cash_denomination_count_line_multi_company" model="ir.rule">
+        <field name="name">POS Cash Denomination Count Line Multi-Company</field>
+        <field name="model_id" ref="model_pos_cash_denomination_count_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
 </odoo>

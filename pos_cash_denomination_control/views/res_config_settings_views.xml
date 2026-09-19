@@ -15,6 +15,23 @@
                         help="Non-blocking alert shown when the expected drawer cash reaches this amount. Zero disables the alert.">
                         <field name="pos_vault_withdrawal_threshold"/>
                     </setting>
+                    <setting id="pcdc_cash_count_opening_required" string="Opening Denomination Count"
+                        help="Require a denomination breakdown when opening the session.">
+                        <field name="pos_cash_count_opening_required"/>
+                    </setting>
+                    <setting id="pcdc_cash_count_out_required" string="Cash-Out Denomination Count"
+                        help="Require a denomination breakdown for cash-out operations.">
+                        <field name="pos_cash_count_out_required"/>
+                    </setting>
+                    <setting id="pcdc_cash_count_in_required" string="Cash-In Denomination Count"
+                        help="Require a denomination breakdown for cash-in operations."
+                        invisible="not pos_allow_cash_in">
+                        <field name="pos_cash_count_in_required"/>
+                    </setting>
+                    <setting id="pcdc_cash_count_closing_required" string="Closing Denomination Count"
+                        help="Require a denomination breakdown when closing the session.">
+                        <field name="pos_cash_count_closing_required"/>
+                    </setting>
                 </block>
             </xpath>
         </field>
