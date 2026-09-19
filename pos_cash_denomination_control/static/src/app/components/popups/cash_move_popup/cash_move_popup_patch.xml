@@ -7,8 +7,9 @@
         <xpath expr="//Input" position="attributes">
             <attribute name="readonly">ui.isSmall or pcdcCountRequired</attribute>
         </xpath>
-        <xpath expr="//Input" position="after">
-            <div t-if="pcdcCountRequired" class="button icon btn btn-secondary btn-lg lh-lg" t-on-click="openNumpadDialog">
+        <!-- Sibling of the amount wrapper inside the flex row, so it renders to the left of the field. -->
+        <xpath expr="//Input/.." position="before">
+            <div t-if="pcdcCountRequired" class="pcdc-breakdown-button button icon btn btn-secondary btn-lg lh-lg" t-on-click="openNumpadDialog">
                 <i class="fa fa-money" role="img" title="Open the denomination breakdown popup"/>
             </div>
         </xpath>

@@ -55,6 +55,16 @@ test("Cash move amount field is read-only when the applicable toggle is on", asy
     expect(".input-amount input").toHaveAttribute("readonly");
 });
 
+test("Cash move breakdown button sits to the left of the amount field", async () => {
+    const store = await setupPosEnv();
+    store.config.cash_count_out_required = true;
+
+    await mountWithCleanup(CashMovePopup, { props: { close: () => {} } });
+
+    // Same flex row as the amount field, immediately before its wrapper.
+    expect(".input-amount > .pcdc-breakdown-button + div input").toHaveCount(1);
+});
+
 test("Closing cash amount field is read-only when the closing toggle is on", async () => {
     const store = await setupPosEnv();
     store.config.cash_count_closing_required = true;
