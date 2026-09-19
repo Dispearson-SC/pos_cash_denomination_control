@@ -143,7 +143,8 @@ class TestCounts(CommonPosTest):
         """
         if "hr.employee" not in self.env:
             self.skipTest("requires pos_hr (hr.employee not installed)")
-        employee = self.env["hr.employee"].create({"name": "Test Employee"})
+        # Fixture setup only: the POS test user has no rights on hr models.
+        employee = self.env["hr.employee"].sudo().create({"name": "Test Employee"})
         employee_id, employee_name = self.session._pcdc_resolve_employee(
             "out", {"employee_id": employee.id}
         )
@@ -152,7 +153,8 @@ class TestCounts(CommonPosTest):
 
     def test_employee_absent_without_pos_hr_installed(self):
         """Employee absent without pos_hr installed."""
-        self.assertNotIn("hr.employee", self.env)
+        if "hr.employee" in self.env:
+            self.skipTest("only meaningful when hr.employee is not installed")
         employee_id, employee_name = self.session._pcdc_resolve_employee(
             "out", {}
         )
