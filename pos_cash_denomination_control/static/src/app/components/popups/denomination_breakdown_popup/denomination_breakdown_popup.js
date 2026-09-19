@@ -32,9 +32,12 @@ export class DenominationBreakdownPopup extends Component {
     setup() {
         this.pos = usePos();
         this.ui = useService("ui");
-        // The same set the server allows at load time, sorted by value.
+        // The same set the server allows at load time, sorted descending by
+        // value — matching stock `MoneyDetailsPopup`'s own order
+        // (`money_details_popup.js:5`, `sort((a, b) => b - a)`) for cashier
+        // consistency between the two popups.
         this.bills = [...this.pos.models["pos.bill"].getAll()].sort(
-            (a, b) => a.value - b.value
+            (a, b) => b.value - a.value
         );
         const initialQuantities = Object.fromEntries(
             this.props.initialLines.map((line) => [line.bill_id, line.quantity])

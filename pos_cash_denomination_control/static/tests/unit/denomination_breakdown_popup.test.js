@@ -28,9 +28,12 @@ test("Popup confirm returns an id-keyed array", async () => {
 
     popup.confirm();
 
+    // Order follows `this.bills` iteration order, which is descending by
+    // value (Phase 12's own "sorted descending" task), so the 10.00 bill
+    // comes first.
     expect(payload.lines).toEqual([
-        { bill_id: ONE_BILL_ID, quantity: 2 },
         { bill_id: TEN_BILL_ID, quantity: 1 },
+        { bill_id: ONE_BILL_ID, quantity: 2 },
     ]);
 });
 
@@ -40,6 +43,17 @@ test("Popup computes a total matching the domain rule", async () => {
     popup.state[TEN_BILL_ID] = 2; // 2 x 10.00
 
     expect(popup.total).toBe(23);
+});
+
+test("Bills are sorted descending by value (cashier consistency with stock MoneyDetailsPopup)", async () => {
+    const { popup } = await mountBreakdownPopup();
+
+    const values = popup.bills.map((bill) => bill.value);
+
+    expect(values).toEqual([...values].sort((a, b) => b - a));
+    // Sanity check: the demo bills are not already sorted descending by id,
+    // so this assertion cannot pass by accident of insertion order.
+    expect(values[0]).toBeGreaterThan(values[values.length - 1]);
 });
 
 test("Note text is generated from the entered breakdown", async () => {
