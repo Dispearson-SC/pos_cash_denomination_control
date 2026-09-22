@@ -32,6 +32,30 @@ class TestCounts(CommonPosTest):
         )
         cls.bill_1 = cls.env["pos.bill"].create({"name": "1", "value": 1.0})
         cls.bill_5 = cls.env["pos.bill"].create({"name": "5", "value": 5.0})
+        # Restricted actor for the ACL boundary tests below: a bare PoS
+        # user, same "cashier" pattern used across this suite's other
+        # `with_user()` tests (e.g. `test_cash_in_control.py`'s
+        # `no_permission_user`, `test_closing_override.py`'s
+        # `non_manager`) -- `point_of_sale.group_pos_user` alone still
+        # needs `base.group_user` to reach the model at all.
+        cls.cashier = (
+            cls.env["res.users"]
+            .with_context(no_reset_password=True)
+            .create(
+                {
+                    "name": "PoS user (ACL boundary tests)",
+                    "login": "pcdc_acl_boundary_cashier",
+                    "group_ids": [
+                        Command.set(
+                            [
+                                cls.env.ref("base.group_user").id,
+                                cls.env.ref("point_of_sale.group_pos_user").id,
+                            ]
+                        )
+                    ],
+                }
+            )
+        )
 
     def _create_header(self, move_type, **extra):
         vals = {
@@ -128,28 +152,13 @@ class TestCounts(CommonPosTest):
         self.assertEqual(line.reason_id, self.reason)
 
     # -- Employee attribution --------------------------------------------
-
-    def test_employee_stored_with_pos_hr_installed(self):
-        """Employee stored with pos_hr installed.
-
-        **Limitation (documented)**: this addon has no dependency on
-        `pos_hr`/`hr`, so `hr.employee` is not a registered model in the
-        default (non-coexistence) test run, and `_pcdc_resolve_employee`
-        deliberately resolves a name only when `'hr.employee' in self.env`
-        (design.md ADR-8). This scenario is only exercised for real by the
-        `pos_hr` coexistence run (`scripts/test.sh pos_hr`); it skips here,
-        the same way a real install without `pos_hr` would leave the
-        employee field empty.
-        """
-        if "hr.employee" not in self.env:
-            self.skipTest("requires pos_hr (hr.employee not installed)")
-        # Fixture setup only: the POS test user has no rights on hr models.
-        employee = self.env["hr.employee"].sudo().create({"name": "Test Employee"})
-        employee_id, employee_name = self.session._pcdc_resolve_employee(
-            "out", {"employee_id": employee.id}
-        )
-        self.assertEqual(employee_id, employee.id)
-        self.assertEqual(employee_name, employee.name)
+    #
+    # `test_employee_stored_with_pos_hr_installed` used to live here too,
+    # but `_pcdc_resolve_employee` now calls `pos.config._employee_domain`
+    # (a `pos_hr`-only addition) whenever `hr.employee` is registered and
+    # an `employee_id` is given -- see
+    # `TestCountsPosHrEmployeeDomain` below for why that must run
+    # `post_install` rather than here.
 
     def test_employee_absent_without_pos_hr_installed(self):
         """Employee absent without pos_hr installed."""
@@ -279,6 +288,59 @@ class TestCounts(CommonPosTest):
                 no_access_user
             ).search([])
 
+    # -- ACL boundary: create/write/unlink are 0 for every group ---------
+    #
+    # `ir.model.access.csv` grants `perm_create=perm_write=perm_unlink=0`
+    # for both `point_of_sale.group_pos_user` and
+    # `point_of_sale.group_pos_manager` on both models below, by design:
+    # only `_pcdc_create_count`'s `.sudo()` may write them. No existing
+    # test asserted this boundary directly before now -- every other
+    # fixture in this file creates these records through `.sudo()`.
+
+    def test_non_privileged_user_cannot_create_write_or_unlink_count_header(
+        self,
+    ):
+        """A restricted PoS user can neither `create()`, `write()`, nor
+        `unlink()` a `pos.cash.denomination.count` directly."""
+        header = self._create_header("opening", total=1)
+        with self.assertRaises(AccessError):
+            self.env["pos.cash.denomination.count"].with_user(self.cashier).create(
+                {
+                    "session_id": self.session.id,
+                    "move_type": "opening",
+                    "total": 1,
+                    "user_id": self.env.user.id,
+                }
+            )
+        with self.assertRaises(AccessError):
+            header.with_user(self.cashier).write({"total": 2})
+        with self.assertRaises(AccessError):
+            header.with_user(self.cashier).unlink()
+
+    def test_non_privileged_user_cannot_create_write_or_unlink_count_line(
+        self,
+    ):
+        """Same ACL boundary as above, for
+        `pos.cash.denomination.count.line`."""
+        header = self._create_header("opening", total=1)
+        line = self._create_line(header, self.bill_1, 1)
+        with self.assertRaises(AccessError):
+            self.env["pos.cash.denomination.count.line"].with_user(
+                self.cashier
+            ).create(
+                {
+                    "count_id": header.id,
+                    "bill_id": self.bill_1.id,
+                    "bill_name": self.bill_1.name,
+                    "bill_value": self.bill_1.value,
+                    "quantity": 1,
+                }
+            )
+        with self.assertRaises(AccessError):
+            line.with_user(self.cashier).write({"quantity": 2})
+        with self.assertRaises(AccessError):
+            line.with_user(self.cashier).unlink()
+
     def test_filter_statement_lines_by_reason(self):
         """Filter statement lines by reason."""
         other_reason = self.env["pos.cash.move.reason"].create(
@@ -306,3 +368,140 @@ class TestCounts(CommonPosTest):
         )
         self.assertEqual(len(found), 1)
         self.assertEqual(found.cash_move_reason_id, self.reason)
+
+
+@tagged("post_install", "-at_install", "pcdc", "pcdc_counts")
+class TestCountsPosHrEmployeeDomain(CommonPosTest):
+    """`_pcdc_resolve_employee`'s `pos.config._employee_domain` guard
+    (the fix for the forgeable-attribution finding), which only exists
+    once `pos_hr` is actually loaded.
+
+    `post_install`/`-at_install` (same reasoning as `test_hoot.py`'s own
+    docstring): `pos_cash_denomination_control`'s `at_install` tests run
+    immediately once *this* module finishes loading, which in the
+    `pos_hr` coexistence run (`scripts/test.sh pos_hr`) can happen before
+    `pos_hr` itself has loaded, even though `hr.employee` (added by the
+    separate `hr` module) is already registered -- confirmed empirically:
+    an `at_install` version of these tests hit
+    `AttributeError: 'pos.config' object has no attribute
+    '_employee_domain'` because `pos_hr`'s own `pos.config` extension
+    had not loaded yet. `post_install` runs only after every requested
+    module has finished loading, so `pos_hr` (when present) is always
+    fully installed by the time these run.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.pos_config_usd.open_ui()
+        cls.session = cls.pos_config_usd.current_session_id
+        cls.session.set_opening_control(0, False)
+        cls.reason = cls.env["pos.cash.move.reason"].create(
+            {"name": "Bank Deposit", "direction": "out"}
+        )
+        cls.bill_1 = cls.env["pos.bill"].create({"name": "1", "value": 1.0})
+
+    def test_employee_stored_with_pos_hr_installed(self):
+        """Employee stored with pos_hr installed.
+
+        Moved here (from `TestCounts`, an `at_install` class) once
+        `_pcdc_resolve_employee` started calling
+        `pos.config._employee_domain`: that `pos_hr`-only method is not
+        yet present during `TestCounts`'s own `at_install` phase in the
+        `pos_hr` coexistence run (confirmed empirically -- see this
+        class's own docstring), even though `hr.employee` (from the
+        separate `hr` module) already is.
+        """
+        if "hr.employee" not in self.env:
+            self.skipTest("requires pos_hr (hr.employee not installed)")
+        # Fixture setup only: the POS test user has no rights on hr models.
+        employee = self.env["hr.employee"].sudo().create({"name": "Test Employee"})
+        employee_id, employee_name = self.session._pcdc_resolve_employee(
+            "out", {"employee_id": employee.id}
+        )
+        self.assertEqual(employee_id, employee.id)
+        self.assertEqual(employee_name, employee.name)
+
+    def test_cash_move_with_employee_from_another_company_is_rejected(self):
+        """Cash move with an `employee_id` from another company is
+        rejected, and no count header is created.
+
+        `extras['employee_id']` is caller-supplied (the key `pos_hr`'s own
+        `CashMovePopup` patch injects into `try_cash_in_out`'s payload,
+        never a server-side guarantee), so `_pcdc_resolve_employee` must
+        constrain it to `pos.config._employee_domain` before trusting it
+        for the count's audit trail -- otherwise any cash move could name
+        an employee from an unrelated company. This only exercises the
+        `hr.employee` branch, so it only runs under the `pos_hr`
+        coexistence suite (`scripts/test.sh pos_hr`); see
+        `TestCounts.test_employee_absent_without_pos_hr_installed` for the
+        mirror skip. Uses a manual try/except rather than `assertRaises`
+        (`BaseCase.assertRaises` rolls back its own savepoint) so the
+        header count can still be checked afterward.
+        """
+        if "hr.employee" not in self.env:
+            self.skipTest("requires pos_hr (hr.employee not installed)")
+        other_company = self.env["res.company"].create({"name": "Other Co (PCDC test)"})
+        foreign_employee = self.env["hr.employee"].sudo().create(
+            {"name": "Foreign Employee", "company_id": other_company.id}
+        )
+        self.pos_config_usd.cash_count_out_required = True
+        before_count = self.env["pos.cash.denomination.count"].sudo().search_count([])
+        raised = False
+        try:
+            self.session.try_cash_in_out(
+                "out",
+                1,
+                "Test",
+                False,
+                {
+                    "translatedType": "Cash out",
+                    "reason_id": self.reason.id,
+                    "denomination_lines": [
+                        {"bill_id": self.bill_1.id, "quantity": 1}
+                    ],
+                    "employee_id": foreign_employee.id,
+                },
+            )
+        except AccessError:
+            raised = True
+        self.assertTrue(raised)
+        self.assertEqual(
+            self.env["pos.cash.denomination.count"].sudo().search_count([]),
+            before_count,
+        )
+
+    def test_cash_move_with_employee_from_same_company_is_accepted_and_stamped(
+        self,
+    ):
+        """A legitimate `employee_id` (same company, no allow-list
+        configured on the config) is still accepted and still stamps
+        `employee_ref`/`employee_name` on the header -- the happy path
+        this fix must not break."""
+        if "hr.employee" not in self.env:
+            self.skipTest("requires pos_hr (hr.employee not installed)")
+        employee = self.env["hr.employee"].sudo().create({"name": "Local Employee"})
+        self.pos_config_usd.cash_count_out_required = True
+        self.session.try_cash_in_out(
+            "out",
+            1,
+            "Test",
+            False,
+            {
+                "translatedType": "Cash out",
+                "reason_id": self.reason.id,
+                "denomination_lines": [{"bill_id": self.bill_1.id, "quantity": 1}],
+                "employee_id": employee.id,
+            },
+        )
+        header = (
+            self.env["pos.cash.denomination.count"]
+            .sudo()
+            .search(
+                [("session_id", "=", self.session.id), ("move_type", "=", "out")],
+                order="id desc",
+                limit=1,
+            )
+        )
+        self.assertEqual(header.employee_ref, employee.id)
+        self.assertEqual(header.employee_name, employee.name)

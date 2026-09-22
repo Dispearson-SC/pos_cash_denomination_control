@@ -22,7 +22,12 @@ import { RPCError } from "@web/core/network/rpc";
  * silently blocks every later queued call. `execute()` below catches a
  * rejection only when it is a replay (`uuid` is truthy — only `syncData`
  * sets it, `data_service.js:829`) of `pos.session.try_cash_in_out` /
- * `set_opening_control`, and only for a business RPC error (`UserError`,
+ * `set_opening_control` / `post_closing_cash_details`
+ * (`PCDC_REPLAY_REJECTABLE_METHODS` — every method
+ * `PCDC_STAGED_METHODS` stages must also appear here, or its business
+ * rejection gets the un-rejectable rethrow instead of the handled
+ * drop-and-notify path, silently wedging the offline queue), and only for
+ * a business RPC error (`UserError`,
  * `ValidationError`, `AccessError`, `MissingError`). In that case it
  * dispatches a `window` `CustomEvent` (handled by `pos_store_patch.js`) and
  * returns a truthy sentinel so `syncData` drops the rejected item instead
@@ -32,7 +37,11 @@ import { RPCError } from "@web/core/network/rpc";
  */
 
 const PCDC_STAGED_METHODS = new Set(["set_opening_control", "post_closing_cash_details"]);
-const PCDC_REPLAY_REJECTABLE_METHODS = new Set(["try_cash_in_out", "set_opening_control"]);
+const PCDC_REPLAY_REJECTABLE_METHODS = new Set([
+    "try_cash_in_out",
+    "set_opening_control",
+    "post_closing_cash_details",
+]);
 const PCDC_BUSINESS_ERROR_NAMES = new Set([
     "odoo.exceptions.UserError",
     "odoo.exceptions.ValidationError",

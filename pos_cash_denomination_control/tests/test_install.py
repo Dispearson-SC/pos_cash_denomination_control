@@ -46,7 +46,13 @@ class TestInstall(CommonPosTest):
         self.pos_config_usd.invalidate_recordset(["default_cash_out_reason_id"])
         self.assertFalse(self.pos_config_usd.default_cash_out_reason_id)
 
-        post_init_hook(self.env)
+        with self.assertLogs(
+            "odoo.addons.pos_cash_denomination_control.hooks", level="INFO"
+        ) as captured:
+            post_init_hook(self.env)
+        self.assertTrue(
+            any("backfilled" in message for message in captured.output)
+        )
         self.pos_config_usd.invalidate_recordset(["default_cash_out_reason_id"])
 
         vault_reason = self.env.ref(

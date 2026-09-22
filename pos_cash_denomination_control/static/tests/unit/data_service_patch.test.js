@@ -77,6 +77,30 @@ test("A replayed set_opening_control business rejection dispatches an event and 
     expect(listener.get().method).toBe("set_opening_control");
 });
 
+test("A replayed post_closing_cash_details business rejection dispatches an event and is dropped", async () => {
+    const store = await setupPosEnv();
+    patchWithCleanup(store.data.orm, {
+        async call() {
+            throw makeBusinessError("odoo.exceptions.ValidationError", "stale denomination lines");
+        },
+    });
+    const listener = captureReplayRejected();
+
+    const result = await store.data.execute({
+        type: "call",
+        model: "pos.session",
+        method: "post_closing_cash_details",
+        args: [],
+        kwargs: {},
+        queue: true,
+        uuid: "replay-uuid-5",
+    });
+
+    listener.cleanup();
+    expect(result).toBe(true);
+    expect(listener.get().method).toBe("post_closing_cash_details");
+});
+
 test("A live (non-replay) rejection is not swallowed", async () => {
     const store = await setupPosEnv();
     patchWithCleanup(store.data.orm, {

@@ -265,3 +265,26 @@ class TestClosingOverride(CommonPosTest):
         with self.assertRaises(UserError):
             session.with_user(self.non_manager).action_pos_session_close()
         self.assertNotEqual(session.state, "closed")
+
+    def test_non_manager_cannot_tamper_with_audit_stamp_via_direct_write(self):
+        """A bare cashier cannot forge or erase the closing-override audit
+        stamp with a direct `write()`.
+
+        Core's ACL grants `point_of_sale.group_pos_user` `perm_write=1` on
+        `pos.session` (the only record rule scopes by company, not by
+        owner), and the three audit fields are only `readonly=True` --
+        Odoo write access is gated by `ir.model.access.csv`, never by a
+        field's own `readonly` flag. Without `pos.session.write()`'s own
+        guard (`_PCDC_AUDIT_LOCKED_FIELDS`), `self.non_manager` could
+        erase this flag on any session in the company. This must raise
+        `UserError` (the business-logic guard), not `AccessError` (core's
+        ACL still grants `perm_write` on the model itself).
+        """
+        session = self._open_session()
+        session.action_pos_session_close()
+        self.assertTrue(session.closed_without_denomination_count)
+        with self.assertRaises(UserError):
+            session.with_user(self.non_manager).write(
+                {"closed_without_denomination_count": False}
+            )
+        self.assertTrue(session.closed_without_denomination_count)

@@ -107,6 +107,15 @@ def _pcdc_thaw_lines(frozen):
     return [{"bill_id": bill_id, "quantity": quantity} for bill_id, quantity in frozen]
 
 
+_PCDC_AUDIT_LOCKED_FIELDS = frozenset(
+    (
+        "closed_without_denomination_count",
+        "closed_without_denomination_count_user_id",
+        "closed_without_denomination_count_date",
+    )
+)
+
+
 class PosSession(models.Model):
     _inherit = "pos.session"
 
@@ -130,6 +139,34 @@ class PosSession(models.Model):
         string="Denomination Movements",
         compute="_compute_pcdc_count_movement_count",
     )
+
+    def write(self, vals):
+        """Block a raw `write()` from touching any of the three
+        closing-override audit stamps (`_PCDC_AUDIT_LOCKED_FIELDS`).
+
+        Odoo write access is gated by `ir.model.access.csv`'s
+        `perm_write`, never by a field's own `readonly=True` (that is a
+        UI-only hint) -- and core's ACL grants `point_of_sale.group_pos_user`
+        `perm_write=1` on `pos.session`, with the only record rule scoping
+        by company, not by owner. Without this guard, any cashier could
+        `session.write({'closed_without_denomination_count': False})` on
+        any session in the company, erasing or forging the audit trail
+        `_validate_session` stamps on a manager's closing override.
+
+        The sole legitimate writer is `_validate_session` below, which
+        reaches the base `write()` directly via
+        `super(PosSession, self.sudo()).write(...)` -- same pattern as
+        `cash_vault.cash_vault_collection`'s own `_LOCKED_FIELDS` guard
+        (`cash_vault/models/cash_vault_collection.py`) -- so this override
+        never sees, and never blocks, that call."""
+        if _PCDC_AUDIT_LOCKED_FIELDS.intersection(vals):
+            raise UserError(
+                _(
+                    "The closing-override audit fields cannot be set "
+                    "directly."
+                )
+            )
+        return super().write(vals)
 
     def _compute_pcdc_count_movement_count(self):
         """Backs the "Denomination Movements" smart button (feature
@@ -340,7 +377,49 @@ class PosSession(models.Model):
         `extras['employee_id']`; opening/closing read `session.employee_id`
         only when that field exists on this session (`pos_hr` installed).
         The name is resolved only when `hr.employee` is a registered
-        model."""
+        model.
+
+        `extras['employee_id']` is caller-supplied (it is the key
+        `pos_hr`'s own `CashMovePopup` patch injects, not a server-side
+        guarantee), so it is never trusted verbatim: it is constrained to
+        `pos.config._employee_domain(user_id)` -- `pos_hr`'s own "employees
+        allowed to operate this config" predicate (confirmed against the
+        real installed source,
+        `odoo/addons/pos_hr/models/pos_config.py`), company-scoped via
+        `_check_company_domain` plus, when configured,
+        `basic_employee_ids`/`advanced_employee_ids`/`minimal_employee_ids`
+        membership. Without this, a forged id could name an employee from
+        another company, or one with no relation to this session at all,
+        on the count's audit trail. The same check runs uniformly for the
+        opening/closing branch too -- `self.employee_id` is already the
+        session's own clocked employee and therefore always passes it --
+        rather than special-casing that branch. Filtering the search
+        result in Python (instead of combining `_employee_domain`'s return
+        value with another domain via `+`) sidesteps `_employee_domain`
+        possibly returning a `Domain` object rather than a plain list.
+
+        `hasattr(config, "_employee_domain")` guards the call itself,
+        rather than assuming `"hr.employee" in self.env` implies `pos_hr`
+        specifically is installed: `hr.employee` is added by the separate
+        `hr` module, which `pos_hr` depends on (`depends: ['point_of_sale',
+        'hr']`). In *this* addon's dependency graph, `pos_hr`'s own
+        manifest also sets `auto_install: True`, so installing `hr`
+        alongside `point_of_sale` (already a hard dependency of this
+        addon) always pulls `pos_hr` in automatically -- confirmed
+        empirically (`docker compose exec odoo cat
+        .../pos_hr/__manifest__.py`, and by installing this addon plus
+        bare `hr` in a real container: `pos_hr` ends up installed anyway).
+        So `hr` genuinely present without `pos_hr` cannot happen through
+        ordinary installation here, and this branch has NO automated test
+        proving it (every attempt to construct that combination in this
+        repo's test environment silently auto-installs `pos_hr` too,
+        making `hasattr` true regardless). It is kept purely as defence
+        in depth for a configuration this addon cannot itself construct
+        or verify (e.g. `pos_hr` manually uninstalled afterward while
+        `hr` stays) -- if that combination ever exists, this still
+        enforces the same company scoping `_employee_domain` applies
+        underneath, rather than crashing or skipping the check
+        entirely."""
         self.ensure_one()
         if move_type in ("in", "out"):
             employee_id = (extras or {}).get("employee_id") or None
@@ -351,8 +430,21 @@ class PosSession(models.Model):
 
         employee_name = False
         if employee_id and "hr.employee" in self.env:
-            employee = self.env["hr.employee"].sudo().browse(employee_id).exists()
-            employee_name = employee.name if employee else False
+            config = self.config_id
+            if hasattr(config, "_employee_domain"):
+                domain = config._employee_domain(self.env.user.id)
+            else:
+                domain = [("company_id", "in", [config.company_id.id, False])]
+            allowed_employees = self.env["hr.employee"].sudo().search(domain)
+            employee = allowed_employees.filtered(lambda e: e.id == employee_id)
+            if not employee:
+                raise AccessError(
+                    _(
+                        "The selected employee is not allowed to operate "
+                        "this point of sale."
+                    )
+                )
+            employee_name = employee.name
 
         return employee_id, employee_name
 
@@ -585,7 +677,13 @@ class PosSession(models.Model):
         # Not flagged when `super()` returned the imbalance/force-close
         # wizard action instead of actually closing the session.
         if decision == ClosingDecision.ALLOWED_FLAGGED and self.state == "closed":
-            self.sudo().write(
+            # `super(PosSession, self.sudo()).write(...)`, not
+            # `self.sudo().write(...)`: `self.sudo()` escalates the acting
+            # user first, then `super(PosSession, ...)` resolves `write()`
+            # starting one class above this override in the MRO, so this
+            # one legitimate call bypasses `_PCDC_AUDIT_LOCKED_FIELDS`'s
+            # guard above without weakening it for any other caller.
+            super(PosSession, self.sudo()).write(
                 {
                     "closed_without_denomination_count": True,
                     "closed_without_denomination_count_user_id": self.env.user.id,
