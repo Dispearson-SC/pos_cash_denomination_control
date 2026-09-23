@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0-20260908\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-23 03:35+0000\n"
-"PO-Revision-Date: 2026-09-23 03:35+0000\n"
+"POT-Creation-Date: 2026-09-23 05:59+0000\n"
+"PO-Revision-Date: 2026-09-23 05:59+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -56,6 +56,20 @@ msgstr ""
 #. module: pos_cash_denomination_control
 #: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_cash_move_reason_is_vault_out_only
 msgid "A vault reason must have direction 'Out'."
+msgstr ""
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid "A vault withdrawal is required before any sale can be validated."
+msgstr ""
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid ""
+"A vault withdrawal is required before any sale can be validated. Ask a "
+"supervisor to perform it."
 msgstr ""
 
 #. module: pos_cash_denomination_control
@@ -442,23 +456,6 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/pos_cash_denomination_control/static/src/app/components/popups/opening_control_popup/opening_control_popup_patch.js:0
 msgid "Enter the opening cash breakdown before confirming."
-msgstr ""
-
-#. module: pos_cash_denomination_control
-#. odoo-javascript
-#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
-msgid ""
-"Expected cash (%(expected)s) has reached the vault withdrawal threshold "
-"(%(threshold)s). Perform a cash withdrawal before validating any sale."
-msgstr ""
-
-#. module: pos_cash_denomination_control
-#. odoo-javascript
-#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
-msgid ""
-"Expected cash (%(expected)s) has reached the vault withdrawal threshold "
-"(%(threshold)s). You don't have permission to record cash movements: ask a "
-"supervisor to perform the vault withdrawal."
 msgstr ""
 
 #. module: pos_cash_denomination_control
