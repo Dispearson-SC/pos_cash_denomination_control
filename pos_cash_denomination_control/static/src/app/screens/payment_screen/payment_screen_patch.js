@@ -45,17 +45,18 @@ patch(PaymentScreen.prototype, {
      * `point_of_sale.group_pos_manager` nor `account.group_account_invoice`)
      * the cashier is told a supervisor must perform the withdrawal, instead
      * of being left at a dead end with no explanation and no exit.
+     *
+     * Confidentiality: neither the expected drawer cash nor the vault
+     * withdrawal threshold is shown here. Both are sensitive operational
+     * figures that a cashier-facing, register-blocking dialog must not
+     * reveal.
      */
     pcdcShowVaultBlockedDialog() {
-        const { expected, threshold } = this.pos.vaultAlert;
-        const expectedFormatted = this.env.utils.formatCurrency(expected);
-        const thresholdFormatted = this.env.utils.formatCurrency(threshold);
         if (!this.pos.showCashMoveButton) {
             this.dialog.add(AlertDialog, {
                 title: _t("Register blocked"),
                 body: _t(
-                    "Expected cash (%(expected)s) has reached the vault withdrawal threshold (%(threshold)s). You don't have permission to record cash movements: ask a supervisor to perform the vault withdrawal.",
-                    { expected: expectedFormatted, threshold: thresholdFormatted }
+                    "A vault withdrawal is required before any sale can be validated. Ask a supervisor to perform it."
                 ),
             });
             return;
@@ -63,8 +64,7 @@ patch(PaymentScreen.prototype, {
         this.dialog.add(ConfirmationDialog, {
             title: _t("Register blocked"),
             body: _t(
-                "Expected cash (%(expected)s) has reached the vault withdrawal threshold (%(threshold)s). Perform a cash withdrawal before validating any sale.",
-                { expected: expectedFormatted, threshold: thresholdFormatted }
+                "A vault withdrawal is required before any sale can be validated."
             ),
             confirmLabel: _t("Withdraw cash"),
             confirm: () =>

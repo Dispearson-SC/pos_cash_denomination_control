@@ -4,6 +4,7 @@ import { setupPosEnv, getFilledOrder } from "@point_of_sale/../tests/unit/utils"
 import { definePosModels } from "@point_of_sale/../tests/unit/data/generate_model_definitions";
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
 import OrderPaymentValidation from "@point_of_sale/app/utils/order_payment_validation";
+import { AlertDialog, ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { VaultAlertIndicator } from "@pos_cash_denomination_control/app/components/navbar/vault_alert_indicator/vault_alert_indicator";
 
 definePosModels();
@@ -79,12 +80,19 @@ test("Validation is refused when blocking is on and a withdrawal is required", a
 
     expect(getCalled()).toBe(0);
     expect(dialogs.length).toBe(1);
+    // Confidentiality: neither the expected drawer cash nor the vault
+    // withdrawal threshold may ever reach the cashier-facing dialog body.
+    const body = dialogs[0].props.body;
+    expect(body).not.toInclude(comp.env.utils.formatCurrency(1500));
+    expect(body).not.toInclude(comp.env.utils.formatCurrency(1000));
 });
 
 test("Blocked dialog offers the withdrawal when the cashier has permission", async () => {
     const store = await setupPosEnv();
     store.config.vault_withdrawal_blocking = true;
     store.vaultAlert.required = true;
+    store.vaultAlert.expected = 1500;
+    store.vaultAlert.threshold = 1000;
     patchWithCleanup(store, {
         get showCashMoveButton() {
             return true;
@@ -97,21 +105,35 @@ test("Blocked dialog offers the withdrawal when the cashier has permission", asy
             return Promise.resolve();
         },
     });
-    let confirmCallback;
+    let capturedDialog;
     patchWithCleanup(store.dialog, {
         add(component, props) {
-            confirmCallback = props.confirm;
+            capturedDialog = { component, props };
             return () => {};
         },
     });
     const comp = await mountPaymentScreen(store);
 
     await comp.validateOrder();
-    await confirmCallback();
+    await capturedDialog.props.confirm();
 
     expect(captured.initialType).toBe("out");
     expect(captured.initialReasonId).toBe(
         VaultAlertIndicator.preselectedVaultReasonId(store)
+    );
+    // Confidentiality: this dialog must never reveal the expected cash or
+    // the vault withdrawal threshold to the cashier.
+    expect(capturedDialog.component).toBe(ConfirmationDialog);
+    expect(capturedDialog.props.title).toBe("Register blocked");
+    expect(capturedDialog.props.confirmLabel).toBe("Withdraw cash");
+    expect(capturedDialog.props.body).toBe(
+        "A vault withdrawal is required before any sale can be validated."
+    );
+    expect(capturedDialog.props.body).not.toInclude(
+        comp.env.utils.formatCurrency(1500)
+    );
+    expect(capturedDialog.props.body).not.toInclude(
+        comp.env.utils.formatCurrency(1000)
     );
 });
 
@@ -119,6 +141,8 @@ test("Blocked dialog points at a supervisor when the cashier lacks cash-move per
     const store = await setupPosEnv();
     store.config.vault_withdrawal_blocking = true;
     store.vaultAlert.required = true;
+    store.vaultAlert.expected = 1500;
+    store.vaultAlert.threshold = 1000;
     patchWithCleanup(store, {
         get showCashMoveButton() {
             return false;
@@ -131,9 +155,11 @@ test("Blocked dialog points at a supervisor when the cashier lacks cash-move per
             return Promise.resolve();
         },
     });
+    let capturedComponent;
     let capturedProps;
     patchWithCleanup(store.dialog, {
         add(component, props) {
+            capturedComponent = component;
             capturedProps = props;
             return () => {};
         },
@@ -144,6 +170,15 @@ test("Blocked dialog points at a supervisor when the cashier lacks cash-move per
 
     expect(cashMoveCalled).toBe(false);
     expect(capturedProps.confirm).toBe(undefined);
+    // Confidentiality: this dialog must never reveal the expected cash or
+    // the vault withdrawal threshold to the cashier.
+    expect(capturedComponent).toBe(AlertDialog);
+    expect(capturedProps.title).toBe("Register blocked");
+    expect(capturedProps.body).toBe(
+        "A vault withdrawal is required before any sale can be validated. Ask a supervisor to perform it."
+    );
+    expect(capturedProps.body).not.toInclude(comp.env.utils.formatCurrency(1500));
+    expect(capturedProps.body).not.toInclude(comp.env.utils.formatCurrency(1000));
 });
 
 test("Block lifts by itself once the vault alert is no longer required", async () => {
