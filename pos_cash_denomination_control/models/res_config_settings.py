@@ -10,6 +10,9 @@ class ResConfigSettings(models.TransientModel):
     pos_vault_withdrawal_threshold = fields.Monetary(
         related="pos_config_id.vault_withdrawal_threshold", readonly=False
     )
+    pos_vault_withdrawal_blocking = fields.Boolean(
+        related="pos_config_id.vault_withdrawal_blocking", readonly=False
+    )
     pos_cash_count_opening_required = fields.Boolean(
         related="pos_config_id.cash_count_opening_required", readonly=False
     )

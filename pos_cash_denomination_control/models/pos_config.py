@@ -25,6 +25,14 @@ this module's install (same "no post-init hook needed" reasoning as
 `allow_cash_in`). Enforcement itself (`cash-denomination-enforcement`) is
 Phase 9; this field only decides, per operation type, whether a breakdown
 will be required once that enforcement lands.
+
+Backs spec `vault-withdrawal-blocking`: `vault_withdrawal_blocking` is a
+stored Boolean defaulting to `False` (same "no post-init hook needed"
+reasoning as every other flag above). It is enforced entirely in the POS
+client (`static/src/app/screens/payment_screen/payment_screen_patch.js`),
+never on the server: this is a WORKFLOW CONTROL, not a security boundary.
+POS orders sync after the sale has physically happened, so refusing them at
+sync time would destroy real transactions instead of preventing them.
 """
 
 from odoo import fields, models
@@ -75,6 +83,13 @@ class PosConfig(models.Model):
     cash_count_closing_required = fields.Boolean(
         default=False,
         help="Require a denomination breakdown when closing the session.",
+    )
+    vault_withdrawal_blocking = fields.Boolean(
+        default=False,
+        help="Stop validating sales for this point of sale once the "
+        "expected drawer cash reaches the vault withdrawal threshold, "
+        "until a cash-out brings it back down. Has no effect while the "
+        "threshold is zero, since the alert itself is disabled.",
     )
 
     _vault_withdrawal_threshold_non_negative = models.Constraint(

@@ -15,6 +15,11 @@
                         help="Non-blocking alert shown when the expected drawer cash reaches this amount. Zero disables the alert.">
                         <field name="pos_vault_withdrawal_threshold"/>
                     </setting>
+                    <setting id="pcdc_vault_withdrawal_blocking" string="Vault Withdrawal Blocking"
+                        help="Stop validating sales once the expected drawer cash reaches the vault withdrawal threshold, until a cash-out brings it back down. Has no effect while the threshold above is zero."
+                        invisible="not pos_vault_withdrawal_threshold">
+                        <field name="pos_vault_withdrawal_blocking"/>
+                    </setting>
                     <setting id="pcdc_cash_count_opening_required" string="Opening Denomination Count"
                         help="Require a denomination breakdown when opening the session.">
                         <field name="pos_cash_count_opening_required"/>
