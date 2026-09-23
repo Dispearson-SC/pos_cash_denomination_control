@@ -39,18 +39,31 @@ export class VaultAlertIndicator extends Component {
     }
 
     /**
+     * Instance convenience: delegates to the static resolution rule below
+     * using this component's own `pos`.
+     */
+    preselectedVaultReasonId() {
+        return VaultAlertIndicator.preselectedVaultReasonId(this.pos);
+    }
+
+    /**
      * Priority: the POS default cash-out reason when it is itself a vault
      * reason, otherwise the first active vault reason by sequence,
      * otherwise no preselection (`false`). Shares `firstActiveVaultReason`
      * with `CashMovePopup`'s own default-reason resolution (Phase 5) so
      * both consumers agree on the same rule.
+     *
+     * Static (spec `vault-withdrawal-blocking`, T3) so
+     * `payment_screen_patch.js`'s blocked-sale dialog can reuse this exact
+     * resolution rule without instantiating this component or duplicating
+     * the logic.
      */
-    preselectedVaultReasonId() {
-        const defaultReason = this.pos.config.default_cash_out_reason_id;
+    static preselectedVaultReasonId(pos) {
+        const defaultReason = pos.config.default_cash_out_reason_id;
         if (defaultReason && defaultReason.is_vault) {
             return defaultReason.id;
         }
-        const vaultReason = firstActiveVaultReason(this.pos.models["pos.cash.move.reason"].getAll());
+        const vaultReason = firstActiveVaultReason(pos.models["pos.cash.move.reason"].getAll());
         return vaultReason ? vaultReason.id : false;
     }
 }
