@@ -5,6 +5,7 @@ import { definePosModels } from "@point_of_sale/../tests/unit/data/generate_mode
 import { OpeningControlPopup } from "@point_of_sale/app/components/popups/opening_control_popup/opening_control_popup";
 import { ClosePosPopup } from "@point_of_sale/app/components/popups/closing_popup/closing_popup";
 import { CashMovePopup } from "@point_of_sale/app/components/popups/cash_move_popup/cash_move_popup";
+import { translateCashMoveType } from "@pos_cash_denomination_control/app/utils/cash_move_type";
 
 definePosModels();
 
@@ -48,7 +49,7 @@ test("Cash move RPC includes denomination_lines in extras", async () => {
         20,
         "",
         store.user.partner_id.id,
-        { formattedAmount: "$ 20.00", translatedType: "Out" }
+        { formattedAmount: "$ 20.00", translatedType: translateCashMoveType("out") }
     );
     const extras = result[result.length - 1];
 

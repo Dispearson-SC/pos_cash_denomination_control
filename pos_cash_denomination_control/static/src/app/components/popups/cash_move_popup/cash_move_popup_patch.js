@@ -1,8 +1,14 @@
 import { CashMovePopup } from "@point_of_sale/app/components/popups/cash_move_popup/cash_move_popup";
+import { CashMoveReceipt } from "@point_of_sale/app/components/popups/cash_move_popup/cash_move_receipt/cash_move_receipt";
 import { patch } from "@web/core/utils/patch";
 import { _t } from "@web/core/l10n/translation";
+import { formatDateTime } from "@web/core/l10n/dates";
+import { parseFloat } from "@web/views/fields/parsers";
 import { reasonsForMoveType } from "@pos_cash_denomination_control/app/utils/reasons";
+import { translateCashMoveType } from "@pos_cash_denomination_control/app/utils/cash_move_type";
 import { DenominationBreakdownPopup } from "@pos_cash_denomination_control/app/components/popups/denomination_breakdown_popup/denomination_breakdown_popup";
+
+const { DateTime } = luxon;
 
 patch(CashMovePopup, {
     props: [...CashMovePopup.props, "initialType?", "initialReasonId?"],
@@ -17,6 +23,66 @@ patch(CashMovePopup.prototype, {
         this.state.reasonId = this.props.initialReasonId ?? this._defaultReasonId();
         this.state.note = "";
         this.pcdcBreakdownLines = null;
+    },
+    /**
+     * A full override, not a thin wrapper around `super.confirm()`: core
+     * computes `translatedType` in a local variable and reuses that same
+     * variable for the employee log message, the `try_cash_in_out` extras
+     * and the printed `CashMoveReceipt`. There is no seam to intercept a
+     * local variable mid-method, so this mirrors core's
+     * `point_of_sale/static/src/app/components/popups/cash_move_popup/cash_move_popup.js`
+     * `confirm()` (Odoo 19) verbatim except for the `translatedType` line
+     * below -- keep this in sync if that method changes upstream.
+     */
+    async confirm() {
+        const amount = parseFloat(this.state.amount);
+        const formattedAmount = this.env.utils.formatCurrency(amount);
+        if (!amount) {
+            this.notification.add(_t("Cash in/out of %s is ignored.", formattedAmount));
+            return this.props.close();
+        }
+
+        const type = this.state.type;
+        const translatedType = translateCashMoveType(type);
+        const extras = { formattedAmount, translatedType };
+        const reason = this.state.reason.trim();
+
+        await this.pos.data.call(
+            "pos.session",
+            "try_cash_in_out",
+            this._prepareTryCashInOutPayload(type, amount, reason, this.partnerId, extras),
+            {},
+            true
+        );
+        await this.pos.logEmployeeMessage(
+            `${_t("Cash")} ${translatedType} - ${_t("Amount")}: ${formattedAmount}`,
+            "CASH_DRAWER_ACTION"
+        );
+        const order = this.pos.models["pos.order"].create({
+            session_id: this.pos.session,
+            company_id: this.pos.company,
+            config_id: this.pos.config,
+            user_id: this.pos.user,
+            ticket_code: "",
+            tracking_number: "",
+            sequence_number: 0,
+            pos_reference: "",
+            state: "cancel", // transient receipt-only order, must never reach IndexedDB
+        });
+        await this.printer.print(CashMoveReceipt, {
+            reason,
+            translatedType,
+            order: order,
+            formattedAmount,
+            date: formatDateTime(DateTime.now()),
+        });
+        this.pos.models["pos.order"].delete(order);
+
+        this.props.close();
+        this.notification.add(
+            _t("Successfully made a cash %s of %s.", type, formattedAmount),
+            3000
+        );
     },
     onClickButton(type) {
         if (type === "in" && !this.pos.config.allow_cash_in) {
