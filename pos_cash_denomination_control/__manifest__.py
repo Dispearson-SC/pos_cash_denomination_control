@@ -1,6 +1,6 @@
 {
     "name": "POS Cash Denomination Control",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "category": "Sales/Point of Sale",
     "summary": "Denomination breakdown, cash-move reasons, vault alerts, and "
                 "closing-manager override for Point of Sale cash control.",
