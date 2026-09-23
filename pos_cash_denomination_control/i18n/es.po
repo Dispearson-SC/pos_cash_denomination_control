@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0-20260908\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-23 01:56+0000\n"
+"POT-Creation-Date: 2026-09-23 03:35+0000\n"
 "PO-Revision-Date: 2026-09-19 15:04+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -93,6 +93,12 @@ msgstr ""
 "Desactivado de forma predeterminada."
 
 #. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.js:0
+msgid "Amount"
+msgstr "Importe"
+
+#. module: pos_cash_denomination_control
 #: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_move_reason_search
 msgid "Archived"
 msgstr "Archivado"
@@ -121,6 +127,12 @@ msgstr "Valor del billete"
 #: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_move_reason__direction__both
 msgid "Both"
 msgstr "Ambos"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.js:0
+msgid "Cash"
+msgstr "Efectivo"
 
 #. module: pos_cash_denomination_control
 #: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
@@ -157,6 +169,8 @@ msgid "Cash Count Out Required"
 msgstr "Conteo de efectivo requerido en salida"
 
 #. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/utils/cash_move_type.js:0
 #: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_denomination_count__move_type__in
 #: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
 #: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_search
@@ -183,6 +197,8 @@ msgid "Cash Moves"
 msgstr "Movimientos de efectivo"
 
 #. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/utils/cash_move_type.js:0
 #: model:ir.model.fields.selection,name:pos_cash_denomination_control.selection__pos_cash_denomination_count__move_type__out
 #: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.view_pos_cash_denomination_count_search
 msgid "Cash Out"
@@ -205,6 +221,12 @@ msgstr "Control de efectivo - apertura"
 #: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
 msgid "Cash in / out"
 msgstr "Entrada / salida de efectivo"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.js:0
+msgid "Cash in/out of %s is ignored."
+msgstr "Se ignora la entrada/salida de efectivo de %s."
 
 #. module: pos_cash_denomination_control
 #. odoo-javascript
@@ -435,6 +457,29 @@ msgid "Enter the opening cash breakdown before confirming."
 msgstr "Ingresa el desglose de efectivo de apertura antes de confirmar."
 
 #. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid ""
+"Expected cash (%(expected)s) has reached the vault withdrawal threshold (%"
+"(threshold)s). Perform a cash withdrawal before validating any sale."
+msgstr ""
+"El efectivo esperado (%(expected)s) alcanzó el umbral de retiro a bóveda "
+"(%(threshold)s). Realice un retiro de efectivo antes de validar cualquier "
+"venta."
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid ""
+"Expected cash (%(expected)s) has reached the vault withdrawal threshold (%"
+"(threshold)s). You don't have permission to record cash movements: ask a "
+"supervisor to perform the vault withdrawal."
+msgstr ""
+"El efectivo esperado (%(expected)s) alcanzó el umbral de retiro a bóveda "
+"(%(threshold)s). No tiene permiso para registrar movimientos de efectivo: "
+"solicite a un supervisor que realice el retiro a bóveda."
+
+#. module: pos_cash_denomination_control
 #: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__vault_withdrawal_threshold
 #: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_vault_withdrawal_threshold
 msgid ""
@@ -642,6 +687,12 @@ msgstr ""
 "(o está archivado), el cajero debe elegir un motivo explícitamente."
 
 #. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid "Register blocked"
+msgstr "Caja bloqueada"
+
+#. module: pos_cash_denomination_control
 #: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
 msgid "Require a denomination breakdown for cash-in operations."
 msgstr ""
@@ -745,15 +796,48 @@ msgstr ""
 "instantánea a continuación conservan el nombre/valor histórico."
 
 #. module: pos_cash_denomination_control
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__vault_withdrawal_blocking
+#: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_vault_withdrawal_blocking
+msgid ""
+"Stop validating sales for this point of sale once the expected drawer cash "
+"reaches the vault withdrawal threshold, until a cash-out brings it back "
+"down. Has no effect while the threshold is zero, since the alert itself is "
+"disabled."
+msgstr ""
+"Deja de validar ventas en este punto de venta cuando el efectivo esperado "
+"en caja alcanza el umbral de retiro a bóveda, hasta que una salida de "
+"efectivo lo reduzca. No tiene efecto mientras el umbral sea cero, ya que "
+"la alerta misma está desactivada."
+
+#. module: pos_cash_denomination_control
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid ""
+"Stop validating sales once the expected drawer cash reaches the vault "
+"withdrawal threshold, until a cash-out brings it back down. Has no effect "
+"while the threshold above is zero."
+msgstr ""
+"Deja de validar ventas cuando el efectivo esperado en caja alcanza el "
+"umbral de retiro a bóveda, hasta que una salida de efectivo lo reduzca. No "
+"tiene efecto mientras el umbral anterior sea cero."
+
+#. module: pos_cash_denomination_control
 #: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__subtotal
 msgid "Subtotal"
 msgstr "Subtotal"
 
 #. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/components/popups/cash_move_popup/cash_move_popup_patch.js:0
+msgid "Successfully made a cash %s of %s."
+msgstr "Se ha realizado un pago en efectivo %s de %s con éxito."
+
+#. module: pos_cash_denomination_control
 #. odoo-python
 #: code:addons/pos_cash_denomination_control/models/pos_session.py:0
 msgid "The closing-override audit fields cannot be set directly."
-msgstr "Los campos de auditoría de anulación de cierre no pueden establecerse directamente."
+msgstr ""
+"Los campos de auditoría de anulación de cierre no pueden establecerse "
+"directamente."
 
 #. module: pos_cash_denomination_control
 #: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_cash_denomination_count_line_quantity_non_negative
@@ -800,7 +884,8 @@ msgstr "El motivo de movimiento de efectivo seleccionado no existe."
 #. odoo-python
 #: code:addons/pos_cash_denomination_control/models/pos_session.py:0
 msgid "The selected employee is not allowed to operate this point of sale."
-msgstr "El empleado seleccionado no tiene permitido operar este punto de venta."
+msgstr ""
+"El empleado seleccionado no tiene permitido operar este punto de venta."
 
 #. module: pos_cash_denomination_control
 #. odoo-javascript
@@ -882,6 +967,13 @@ msgid "Vault Withdrawal Alert"
 msgstr "Alerta de retiro a bóveda"
 
 #. module: pos_cash_denomination_control
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__vault_withdrawal_blocking
+#: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_vault_withdrawal_blocking
+#: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
+msgid "Vault Withdrawal Blocking"
+msgstr "Bloqueo por retiro a bóveda"
+
+#. module: pos_cash_denomination_control
 #: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_config__vault_withdrawal_threshold
 #: model:ir.model.fields,field_description:pos_cash_denomination_control.field_res_config_settings__pos_vault_withdrawal_threshold
 msgid "Vault Withdrawal Threshold"
@@ -893,6 +985,12 @@ msgstr "Umbral de retiro a bóveda"
 #: code:addons/pos_cash_denomination_control/static/src/app/services/pos_store_patch.js:0
 msgid "Vault withdrawal required"
 msgstr "Retiro a bóveda requerido"
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid "Withdraw cash"
+msgstr "Retirar efectivo"
 
 #. module: pos_cash_denomination_control
 #. odoo-javascript
