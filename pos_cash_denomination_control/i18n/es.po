@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0-20260908\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-23 03:35+0000\n"
+"POT-Creation-Date: 2026-09-23 05:59+0000\n"
 "PO-Revision-Date: 2026-09-19 15:04+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -62,6 +62,22 @@ msgstr ""
 #: model:ir.model.constraint,message:pos_cash_denomination_control.constraint_pos_cash_move_reason_is_vault_out_only
 msgid "A vault reason must have direction 'Out'."
 msgstr "Un motivo de bóveda debe tener dirección \"Salida\"."
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid "A vault withdrawal is required before any sale can be validated."
+msgstr "Se requiere un retiro a bóveda para poder cobrar."
+
+#. module: pos_cash_denomination_control
+#. odoo-javascript
+#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
+msgid ""
+"A vault withdrawal is required before any sale can be validated. Ask a "
+"supervisor to perform it."
+msgstr ""
+"Se requiere un retiro a bóveda para poder cobrar. Solicítalo a un "
+"supervisor."
 
 #. module: pos_cash_denomination_control
 #: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_move_reason__active
@@ -457,29 +473,6 @@ msgid "Enter the opening cash breakdown before confirming."
 msgstr "Ingresa el desglose de efectivo de apertura antes de confirmar."
 
 #. module: pos_cash_denomination_control
-#. odoo-javascript
-#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
-msgid ""
-"Expected cash (%(expected)s) has reached the vault withdrawal threshold (%"
-"(threshold)s). Perform a cash withdrawal before validating any sale."
-msgstr ""
-"El efectivo esperado (%(expected)s) alcanzó el umbral de retiro a bóveda "
-"(%(threshold)s). Realice un retiro de efectivo antes de validar cualquier "
-"venta."
-
-#. module: pos_cash_denomination_control
-#. odoo-javascript
-#: code:addons/pos_cash_denomination_control/static/src/app/screens/payment_screen/payment_screen_patch.js:0
-msgid ""
-"Expected cash (%(expected)s) has reached the vault withdrawal threshold (%"
-"(threshold)s). You don't have permission to record cash movements: ask a "
-"supervisor to perform the vault withdrawal."
-msgstr ""
-"El efectivo esperado (%(expected)s) alcanzó el umbral de retiro a bóveda "
-"(%(threshold)s). No tiene permiso para registrar movimientos de efectivo: "
-"solicite a un supervisor que realice el retiro a bóveda."
-
-#. module: pos_cash_denomination_control
 #: model:ir.model.fields,help:pos_cash_denomination_control.field_pos_config__vault_withdrawal_threshold
 #: model:ir.model.fields,help:pos_cash_denomination_control.field_res_config_settings__pos_vault_withdrawal_threshold
 msgid ""
@@ -804,10 +797,10 @@ msgid ""
 "down. Has no effect while the threshold is zero, since the alert itself is "
 "disabled."
 msgstr ""
-"Deja de validar ventas en este punto de venta cuando el efectivo esperado "
-"en caja alcanza el umbral de retiro a bóveda, hasta que una salida de "
-"efectivo lo reduzca. No tiene efecto mientras el umbral sea cero, ya que "
-"la alerta misma está desactivada."
+"Deja de validar ventas en este punto de venta cuando el efectivo esperado en "
+"caja alcanza el umbral de retiro a bóveda, hasta que una salida de efectivo "
+"lo reduzca. No tiene efecto mientras el umbral sea cero, ya que la alerta "
+"misma está desactivada."
 
 #. module: pos_cash_denomination_control
 #: model_terms:ir.ui.view,arch_db:pos_cash_denomination_control.res_config_settings_view_form
@@ -816,9 +809,9 @@ msgid ""
 "withdrawal threshold, until a cash-out brings it back down. Has no effect "
 "while the threshold above is zero."
 msgstr ""
-"Deja de validar ventas cuando el efectivo esperado en caja alcanza el "
-"umbral de retiro a bóveda, hasta que una salida de efectivo lo reduzca. No "
-"tiene efecto mientras el umbral anterior sea cero."
+"Deja de validar ventas cuando el efectivo esperado en caja alcanza el umbral "
+"de retiro a bóveda, hasta que una salida de efectivo lo reduzca. No tiene "
+"efecto mientras el umbral anterior sea cero."
 
 #. module: pos_cash_denomination_control
 #: model:ir.model.fields,field_description:pos_cash_denomination_control.field_pos_cash_denomination_count_line__subtotal
