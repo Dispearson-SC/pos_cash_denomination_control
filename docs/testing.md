@@ -2,22 +2,27 @@
 
 ## Bringing the stack up
 
+The test/dev runner is shared across every module in the `odoo-dev`
+workspace and lives at the workspace root, in `dev/`:
+
 ```bash
+cd ../../dev                       # from this module's repository root
 docker compose build odoo          # first time, or after Dockerfile changes
-docker compose up -d db odoo       # dev instance, reachable at http://localhost:8069
+docker compose up -d db odoo       # optional dev instance, reachable at http://localhost:8069
 ```
 
-The compose project is named `caja-boveda` (see `name:` in `docker-compose.yml`),
-so its containers/volumes/network are isolated from anything else on the host
-(`caja-boveda-db-1`, `caja-boveda-odoo-1`, `caja-boveda_pgdata`,
-`caja-boveda_odoo-data`, `caja-boveda_default`). Only Odoo's `8069` is
-published to the host; Postgres is reachable only from other containers on
-the compose network.
+The compose project is named `odoo-workspace` (see `name:` in
+`dev/docker-compose.yml`), so its containers/volumes/network are isolated
+from anything else on the host. Only Odoo's `8069` is published, bound to
+`127.0.0.1` only; Postgres is reachable only from other containers on the
+compose network.
 
-Stop it with `docker compose down` (add `-v` to also drop the named volumes,
-i.e. wipe the dev database and filestore).
+Stop it with `docker compose down` from `dev/` (add `-v` to also drop the
+named volumes, i.e. wipe the dev database and filestore).
 
 ## Running tests
+
+From this module's repository root:
 
 ```bash
 scripts/test.sh                              # install + full addon test suite
@@ -26,39 +31,42 @@ scripts/test.sh "" -- --test-tags pcdc_domain/pos_cash_denomination_control
 scripts/test.sh "" -- --test-tags pcdc_hoot/pos_cash_denomination_control
 ```
 
+or, equivalently, from the workspace root:
+
+```bash
+dev/scripts/test.sh pos_cash_denomination_control
+dev/scripts/test.sh pos_cash_denomination_control pos_hr
+dev/scripts/test.sh pos_cash_denomination_control "" -- --test-tags pcdc_domain/pos_cash_denomination_control
+```
+
+`scripts/test.sh` is a thin wrapper that pre-fills the module name and
+delegates to `dev/scripts/test.sh`. Every run uses its own database,
+**`test_pos_cash_denomination_control`**, dropped and recreated on each run
+via `docker compose run --rm`; it never touches the `db` volume/data used by
+a `docker compose up -d` dev instance. Anything after `--` replaces the
+default `--test-tags` value, which is the fast way to run one phase's tag
+during development.
+
 ### Hoot suite runs as part of the default `scripts/test.sh`
 
 `tests/test_hoot.py::TestHoot.test_hoot_suite` is a permanent `HttpCase` that
 runs `browser_js` against
 `/web/tests?headless&loglevel=2&preset=desktop&filter=@pos_cash_denomination_control`
-(the exact URL parameters and success signal confirmed in task 1.7) and
-fails the Python test whenever any Hoot assertion under this addon's `@`
+and fails the Python test whenever any Hoot assertion under this addon's `@`
 tag fails. It is tagged `post_install, -at_install` (same as
 `point_of_sale`'s own `TestUi` tour tests), and per the tag-union behavior
 documented below it still matches the bare `/pos_cash_denomination_control`
-filter, so a plain `scripts/test.sh` run with no override now actually
-exercises the addon's Hoot suite (currently the 4 tests in
-`static/tests/unit/cash_move_popup_cash_in.test.js`) instead of requiring a
-throwaway harness to be recreated for manual verification. Confirmed by
-temporarily breaking one Hoot assertion: the full suite reported
-`1 failed, 0 error(s) of 1 tests` with the real browser assertion diff, then
-passed again after the assertion was restored.
+filter, so a plain `scripts/test.sh` run with no override exercises the
+addon's Hoot suite too.
 
-`scripts/test.sh` always drops and recreates a disposable `pcdc_test`
-database via `docker compose run --rm`, so it never touches the `db`
-volume/data used by the `up -d` dev instance. Anything after `--` replaces
-the default `--test-tags` value, which is the fast way to run one phase's
-tag during development (for example `:pcdc_domain`, `:pcdc_cash_in`, ...).
-
-**Known gotcha**: if the long-running dev `odoo` container (`up -d`) is
+**Known gotcha**: if a long-running dev `odoo` container (`up -d`) is
 attached to the same Postgres server while a `scripts/test.sh` run tries to
-`dropdb pcdc_test`, Postgres may refuse with "database is being accessed by
-other users" if the dev instance ever queried `pcdc_test` (e.g. an earlier
-manual test run against it). Stop the dev instance first (`docker compose
-stop odoo`) if that happens, then bring it back with `docker compose up -d
-odoo`.
+drop `test_pos_cash_denomination_control`, Postgres may refuse with
+"database is being accessed by other users" if the dev instance ever queried
+that database. Stop the dev instance first (`docker compose stop odoo` from
+`dev/`) if that happens, then bring it back with `docker compose up -d odoo`.
 
-### Fast domain-only loop (Phase 2 onward)
+### Fast domain-only loop
 
 ```bash
 scripts/test.sh "" -- --test-tags pcdc_domain/pos_cash_denomination_control
@@ -68,16 +76,15 @@ This runs only the pure-Python domain tests (`odoo.tests.BaseCase`, no
 database access), which is the fastest feedback loop while iterating on
 `domain/*.py`.
 
-**Tag filter syntax gotcha (Phase 2, confirmed empirically)**: Odoo's
-`--test-tags` grammar is `[+-]tag[/module][:class][.method]` — the custom
-**tag comes first**, then an optional `/module`, then an optional `:class`.
-Writing `/pos_cash_denomination_control:pcdc_domain` (module first, tag
-after the colon) does **not** filter by the `pcdc_domain` tag: it is parsed
-as `module=pos_cash_denomination_control, class=pcdc_domain`, which matches
-no class named literally `pcdc_domain` and silently runs **zero tests**
-("0 failed, 0 error(s) of 0 tests" — logged as if everything passed). This
-is the same class of trap as the `websocket-client` skip from Phase 1:
-always check that the reported test count is **greater than zero** before
+**Tag filter syntax gotcha (confirmed empirically)**: Odoo's `--test-tags`
+grammar is `[+-]tag[/module][:class][.method]` — the custom **tag comes
+first**, then an optional `/module`, then an optional `:class`. Writing
+`/pos_cash_denomination_control:pcdc_domain` (module first, tag after the
+colon) does **not** filter by the `pcdc_domain` tag: it is parsed as
+`module=pos_cash_denomination_control, class=pcdc_domain`, which matches no
+class named literally `pcdc_domain` and silently runs **zero tests**
+("0 failed, 0 error(s) of 0 tests" — logged as if everything passed).
+Always check that the reported test count is **greater than zero** before
 trusting a green result. The correct form is `tag/module`, e.g.
 `pcdc_domain/pos_cash_denomination_control`. The full default suite
 (`scripts/test.sh`, no override) is unaffected because it uses the bare
@@ -98,7 +105,7 @@ full suite, to catch any conflict between this addon's patches and `pos_hr`'s
 own overrides of the same extension points (`try_cash_in_out`,
 `_set_opening_control_data`, `CashMovePopup`, ...).
 
-### End-to-end browser tours (Phase 13)
+### End-to-end browser tours
 
 ```bash
 scripts/test.sh "" -- --test-tags /pos_cash_denomination_control:TestPcdcHttpCommon
@@ -108,60 +115,54 @@ scripts/test.sh "" -- --test-tags /pos_cash_denomination_control:TestPcdcHttpCom
 -at_install, pcdc_tours`) runs one real headless-Chrome tour per scenario:
 opening/cash-out/closing with a denomination breakdown, cash-in disabled,
 reason/denomination rejection, the vault withdrawal alert's full lifecycle
-(including the one-click cash-out), and a dedicated tour confirming the
-offline replay queue is memory-only (lost on reload while still offline —
-see design.md's Discovery table, "Offline queue" row). These run as part of
-the default `scripts/test.sh` (no tag override needed); the command above
-is the fast way to re-run only this class during development. Every tour
-except the opening one logs in as `pos_admin`: the "Cash In/Out" menu
-option and the one-click vault cash-out both require
-`_has_cash_move_permission()` (`group_pos_manager` or
-`account.group_account_invoice`), which the plain `pos_user` fixture lacks.
+(including the one-click cash-out and, where applicable, register
+blocking), and a dedicated tour confirming the offline replay queue is
+memory-only. These run as part of the default `scripts/test.sh` (no tag
+override needed); the command above is the fast way to re-run only this
+class during development. Every tour except the opening one logs in as
+`pos_admin`: the "Cash In/Out" menu option and the one-click vault cash-out
+both require `_has_cash_move_permission()` (`group_pos_manager` or
+`account.group_account_invoice`), which the plain `pos_user` fixture lacks
+— see `CLAUDE.md`'s "Deferred: cashier vault-withdrawal permission" note.
 
-## Confirmed image facts (Phase 1, task 1.6–1.9)
+## Verified baselines
+
+- `dev/scripts/test.sh pos_cash_denomination_control` (standalone) — 61
+  modules loaded, 0 failed of 171 tests.
+- `dev/scripts/test.sh cash_vault -- --test-tags /cash_vault,/pos_cash_denomination_control`
+  (together with `cash_vault`) — 62 modules loaded, 0 failed of 294 tests.
+
+## Confirmed image facts
 
 - `from odoo.tests import BaseCase` exists; MRO is `odoo.tests.common.BaseCase
   → odoo.tests.case.TestCase → unittest.case.TestCase → object`. It is a
   plain `unittest.TestCase` with no cursor/env, so `--test-tags` and
   `@tagged(...)` both work; tags are stored on the class as `test_tags`, not
-  `_tags`. Confirmed by decorating a throwaway `BaseCase` subclass with
-  `@tagged("at_install", "pcdc", "pcdc_domain")` and reading `.test_tags`
-  back inside the container.
+  `_tags`.
 - The Hoot runner (`odoo/addons/web/tests/test_js.py`,
   `web/static/lib/hoot/core/config.js`) accepts a `filter` URL query param
   (alias `name`) that matches a test/suite's full name **or its tags** as a
   search string, plus a `tag`/`tags` param for exact tag matching. For a
-  standalone `HttpCase.browser_js` call (Phase 13's `tests/test_hoot.py`),
-  use:
+  standalone `HttpCase.browser_js` call (`tests/test_hoot.py`), use:
   - URL: `/web/tests?headless&loglevel=2&preset=desktop&filter=@pos_cash_denomination_control`
   - success signal: `[HOOT] Test suite succeeded`
   - error checker: `odoo.addons.web.tests.test_js.unit_test_error_checker`
     (returns `True` — i.e. "stop on this log line" — for any line that does
     **not** contain `[HOOT]`, so genuine JS/console errors abort the run
     instead of being swallowed).
-  These come from the image's `odoo/addons/web/tests/test_js.py` (not present
-  in the sparse `odoo-src/` clone) and its `HOOTCommon.test_unit_desktop`
-  reference implementation.
-- Demo-data flag: `without_demo = False` in `docker/odoo.conf` resolves
-  internally to `with_demo = True` (demo data installed), confirmed by
-  loading the config with `odoo.tools.config.parse_config(['-c',
-  '/etc/odoo/odoo.conf'])` and reading `config.get('with_demo')`. This is
-  also the default when neither `--with-demo` nor `--without-demo` is passed
-  at all. Demo data is required for the core `point_of_sale` tours this
-  addon's own tours are modeled on.
+- Demo-data flag: `without_demo = False` in `dev/odoo.conf` resolves
+  internally to `with_demo = True` (demo data installed). Demo data is
+  required for the core `point_of_sale` tours this addon's own tours are
+  modeled on.
 - Headless Chrome tours work inside the container, **but only after adding
-  the Python `websocket-client` package** to the image (`docker/Dockerfile`).
+  the Python `websocket-client` package** to the image (`dev/Dockerfile`).
   Without it, `HttpCase.start_pos_tour`/`browser_js` silently **skip** the
   test with `"websocket-client module is not installed"` instead of failing
-  or running through Chrome — this is easy to mistake for a passing test.
-  Confirmed fixed by installing a `point_of_sale` demo tour
-  (`TestUi.test_01_pos_basic_order`, tour `pos_pricelist`) end-to-end:
-  `╔══ TOUR pos_pricelist SUCCEEDED ══╗`, `0 failed, 0 error(s)`.
-- amd64-only constraint: Google does not publish an arm64 `google-chrome-stable`
-  `.deb`, so `docker/Dockerfile` only builds on amd64 hosts. An ARM host
-  needs a different headless-browser strategy (e.g. `chromium` from a
-  non-snap source, or Playwright's bundled Chromium) — out of scope for this
-  change; documented here as a known limitation.
+  or running through Chrome — easy to mistake for a passing test.
+- amd64-only constraint: Google does not publish an arm64
+  `google-chrome-stable` `.deb`, so `dev/Dockerfile` only builds on amd64
+  hosts. An ARM host needs a different headless-browser strategy — out of
+  scope for this module, documented here as a known limitation.
 
 ## Confirmed image path for `odoo.tests.BaseCase` and Hoot lookups
 
