@@ -64,11 +64,28 @@ explicit timeout — see the workspace `CLAUDE.md`. Full detail (Hoot suite,
 tag-filter syntax, coexistence run, browser tours) is in `docs/testing.md`.
 
 **Known conflict with core**: while this module is installed, two core
-`point_of_sale` test scenarios that perform a cash move without a reason no
-longer pass (`test_point_of_sale_flow.py:3212`,
-`static/tests/tours/chrome_tour.js:209`). This is an accepted, documented
-cost, not a defect in either suite — run core/OCA CI without this module
-installed, or tag the known conflict.
+`point_of_sale` tests no longer pass, because they assert stock behavior this
+module deliberately changes:
+
+- `TestPointOfSaleFlow.test_close_session_cash_out_without_accounting_rights`
+  (`tests/test_point_of_sale_flow.py`) — calls `try_cash_in_out` without a
+  `reason_id`, which this module rejects.
+- `TestUi.test_cash_in_out` (`tests/test_frontend.py`, runs the
+  `test_cash_in_out` tour in `chrome_tour.js`) — performs cash moves without
+  choosing a reason, and its cash-in step is also refused because
+  `allow_cash_in` defaults to `False`.
+
+This is an accepted cost, not a defect in either suite. Secure-by-default
+rules (reason required, cash-in off) were chosen over making them opt-in just
+to keep these core tests green. When core tests run with this module
+installed, exclude exactly these two:
+
+```
+--test-tags '-/point_of_sale:TestPointOfSaleFlow.test_close_session_cash_out_without_accounting_rights,-/point_of_sale:TestUi.test_cash_in_out'
+```
+
+Re-check the names on every Odoo upgrade; do not add further exclusions
+without confirming they share this cause.
 
 ## Module-specific traps
 
